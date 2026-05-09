@@ -361,10 +361,15 @@ public abstract class AndroidWordLevelSpellCheckerSession extends Session {
                     | (result.mHasRecommendedSuggestions
                             ? SuggestionsInfo.RESULT_ATTR_HAS_RECOMMENDED_SUGGESTIONS
                             : 0);
-            // nopopup fork: drop the spell-check suggestion list so the system
-            // suggestions popup only offers "Add to dictionary"/"Delete".
-            // The RESULT_ATTR_LOOKS_LIKE_TYPO flag is preserved.
-            final SuggestionsInfo retval = new SuggestionsInfo(flags, new String[0]);
+            // nopopup fork: keep the popup minimal but pass exactly ONE entry
+            // (the original word) instead of an empty array. Some Android
+            // builds skip drawing the misspelled red underline / suppress the
+            // SuggestionSpan entirely when the suggestions array is empty,
+            // which also kills the "Add to dictionary" affordance the user
+            // actually wants. With one self-suggestion the popup stays tiny
+            // (header + "<word>" + Add to dictionary + Delete) and tapping
+            // the suggestion is a harmless no-op replace.
+            final SuggestionsInfo retval = new SuggestionsInfo(flags, new String[]{text});
             mSuggestionsCache.putSuggestionsToCache(text, result.mSuggestions, flags);
             return retval;
         } catch (RuntimeException e) {
