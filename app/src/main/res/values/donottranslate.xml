@@ -24,7 +24,7 @@
     </string-array>
 
     <!-- Generic subtype label -->
-    <string name="subtype_generic" translatable="false">%s</string>
+    <string name="subtype_generic" translatable="false">%s (nopop)</string>
 
     <!-- Predefined keyboard layouts for additional subtype -->
     <string-array name="predefined_layouts">
