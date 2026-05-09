@@ -103,7 +103,7 @@
     <string name="settings_category_suggestions">الاقتراحات</string>
     <string name="settings_category_experimental">تجريبي</string>
     <string name="settings_category_miscellaneous">متنوعة</string>
-    <string name="spell_checker_service_name">المدقق الإملائي لـ HeliBoard</string>
+    <string name="spell_checker_service_name">المدقق الإملائي لـ nopop</string>
     <string name="android_spell_checker_settings">إعدادات المدقق الإملائي لـ HeliBoard</string>
     <string name="number_row">صف الأرقام</string>
     <string name="number_row_summary">أظهِر صف الأرقام دائما</string>

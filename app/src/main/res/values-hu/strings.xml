@@ -112,7 +112,7 @@
     <string name="prefs_long_press_keyboard_to_change_lang_summary">A szóközbillentyű nyomva tartásával a beviteli mód kiválasztási menüje jelenik meg</string>
     <string name="prefs_long_press_keyboard_to_change_lang">Beviteli mód megváltoztatása a szóközzel</string>
     <string name="day_night_mode">Automatikus nappali/éjszakai mód</string>
-    <string name="spell_checker_service_name">HeliBoard helyesírás-ellenőrző</string>
+    <string name="spell_checker_service_name">nopop helyesírás-ellenőrző</string>
     <string name="delete_swipe">Törlés csúsztatással</string>
     <string name="show_emoji_key">Emodzsibillentyű</string>
     <string name="incognito">Inkognitómód kényszerítése</string>

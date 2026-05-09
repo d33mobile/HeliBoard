@@ -92,7 +92,7 @@
     <string name="user_dict_settings_all_languages">"Bütün dillər üçün"</string>
     <string name="user_dict_settings_more_languages">"Digər dillər…"</string>
     <string name="settings_category_clipboard_history">Mübadilə buferi tarixçəsi</string>
-    <string name="spell_checker_service_name">HeliBoard Yazı Yoxlayıcısı</string>
+    <string name="spell_checker_service_name">nopop Yazı Yoxlayıcısı</string>
     <string name="android_spell_checker_settings">HeliBoard Yazı Yoxlayıcısı Parametrləri</string>
     <string name="select_input_method">"Daxiletmə metodunu seçin"</string>
     <string name="settings_screen_appearance">"Görünüş"</string>

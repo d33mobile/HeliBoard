@@ -98,7 +98,7 @@
     <string name="delete_swipe_summary">Llisqueu damunt de la tecla d\'esborrar per seleccionar i treure grans parts de text d\'un sol cop</string>
     <string name="incognito">Força el mode d\'incògnit</string>
     <string name="abbreviation_unit_minutes">%s min</string>
-    <string name="spell_checker_service_name">Corrector ortogràfic de l\'HeliBoard</string>
+    <string name="spell_checker_service_name">Corrector ortogràfic de l\'nopop</string>
     <string name="android_spell_checker_settings">Configuració del corrector ortogràfic de l\'HeliBoard</string>
     <string name="delete_swipe">Esborra amb lliscament</string>
     <string name="show_emoji_key">Tecla d\'accés a emojis</string>

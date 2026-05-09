@@ -101,6 +101,6 @@
     <string name="popup_on_keypress">کنجی دباوݨ تے پوپ‌اپ کرو</string>
     <string name="enable_split_keyboard">دپھاڑ دا کی‌بورڈ نوں چالو کرو</string>
     <string name="split_spacer_scale">دپھاڑ دا فاصلا</string>
-    <string name="spell_checker_service_name">‫HeliBoard‬ لفظ جوڑن والا</string>
+    <string name="spell_checker_service_name">‫nopop‬ لفظ جوڑن والا</string>
     <string name="switch_language">بولی بدلو</string>
 </resources>

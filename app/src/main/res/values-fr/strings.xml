@@ -134,7 +134,7 @@ Nouveau dictionnaire:
     <string name="user_dict_settings_more_languages">"Plus de langues…"</string>
     <string name="user_dict_word_already_present">Ce mot est déjà présent dans le dictionnaire utilisateur %s. Veuillez en saisir un autre.</string>
     <string name="user_dict_add_word_button">Ajouter un mot</string>
-    <string name="spell_checker_service_name">Correcteur orthographique HeliBoard</string>
+    <string name="spell_checker_service_name">Correcteur orthographique nopop</string>
     <string name="android_spell_checker_settings">Paramètres du correcteur orthographique HeliBoard</string>
     <string name="number_row">Ligne de chiffres</string>
     <string name="delete_swipe">Balayage sur la touche Effacer</string>

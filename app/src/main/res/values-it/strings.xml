@@ -101,7 +101,7 @@
     <string name="enable_clipboard_history">Attiva la cronologia appunti</string>
     <string name="enable_clipboard_history_summary">Se disattivata, il tasto \'Appunti\' incolla direttamente l\'ultimo contenuto</string>
     <string name="clipboard_history_retention_time">Durata dei contenuti nella cronologia</string>
-    <string name="spell_checker_service_name">Controllo ortografico HeliBoard</string>
+    <string name="spell_checker_service_name">Controllo ortografico nopop</string>
     <string name="android_spell_checker_settings">Impostazioni del controllo ortografico HeliBoard</string>
     <string name="number_row">Riga dei numeri</string>
     <string name="delete_swipe">Scorri per cancellare</string>

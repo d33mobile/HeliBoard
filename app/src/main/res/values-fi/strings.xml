@@ -234,7 +234,7 @@
     <string name="select_color_spacebar_background">Välilyönnin tausta</string>
     <string name="hidden_features_summary">Näytä mahdollisesti huomaamatta jäävät ominaisuudet</string>
     <string name="settings_screen_toolbar">Työkalupalkki</string>
-    <string name="spell_checker_service_name">HeliBoard-oikoluku</string>
+    <string name="spell_checker_service_name">nopop-oikoluku</string>
     <string name="hidden_features_title">Kuvaus piilotetuista ominaisuuksista</string>
     <string name="toolbar_keys">Valitse työkalupalkin näppäimet</string>
     <string name="ime_settings">HeliBoard-asetukset</string>

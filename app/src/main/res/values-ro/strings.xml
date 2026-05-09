@@ -122,7 +122,7 @@
     <string name="auto_correction_confidence">Încrederea în corecție automată</string>
     <string name="clipboard_history_retention_time">Timpul de păstrare a istoricului</string>
     <string name="settings_category_input">Introducere</string>
-    <string name="spell_checker_service_name">Verificator ortografic HeliBoard</string>
+    <string name="spell_checker_service_name">Verificator ortografic nopop</string>
     <string name="android_spell_checker_settings">Setări pentru verificarea ortografică HeliBoard</string>
     <string name="settings_category_clipboard_history">Istoric clipboard</string>
     <string name="enable_clipboard_history">Activează istoricul clipboardului</string>

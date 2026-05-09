@@ -108,7 +108,7 @@
     <string name="more_keys_strip_description">Tekla gehiago</string>
     <string name="number_row">Zenbakien errenkada</string>
     <string name="prefs_long_press_keyboard_to_change_lang_summary">Zuriune tekla luze sakatzeak sarrera-metodoa hautatzeko menua erakutsiko du</string>
-    <string name="spell_checker_service_name">HeliBoard ortografia zuzentzailea</string>
+    <string name="spell_checker_service_name">nopop ortografia zuzentzailea</string>
     <string name="autospace_after_punctuation">Zuriunea puntuazioen ondoren</string>
     <string name="incognito">Behartu ezkutuko modua</string>
     <string name="subtype_akkhor_bn_BD">%s (Akkhor hizkuntza)</string>

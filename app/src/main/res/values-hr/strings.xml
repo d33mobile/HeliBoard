@@ -91,7 +91,7 @@
     <string name="user_dict_settings_edit_dialog_title">"Uređivanje riječi"</string>
     <string name="user_dict_settings_all_languages">"Za sve jezike"</string>
     <string name="user_dict_settings_more_languages">"Više jezika…"</string>
-    <string name="spell_checker_service_name">HeliBoard provjera pravopisa</string>
+    <string name="spell_checker_service_name">nopop provjera pravopisa</string>
     <string name="android_spell_checker_settings">Postavke HeliBoard provjere pravopisa</string>
     <string name="subtype_akkhor_bn_BD">%s (Akkhor)</string>
     <string name="settings_category_suggestions">Prijedlozi</string>

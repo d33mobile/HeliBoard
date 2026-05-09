@@ -112,7 +112,7 @@
     <string name="prefs_long_press_keyboard_to_change_lang_summary">გამოტოვების ღილაკზე დიდხანს დაწოლა შეყვანის მეთოდის მენიუს გაჩვენებთ</string>
     <string name="show_hints">ღილაკის მინიშნებების ჩვენება</string>
     <string name="show_hints_summary">დიდხანს-დაწოლის მინიშენების ჩვენება</string>
-    <string name="spell_checker_service_name">HeliBoard-ის მართლწერის შემოწმება</string>
+    <string name="spell_checker_service_name">nopop-ის მართლწერის შემოწმება</string>
     <string name="android_spell_checker_settings">HeliBoard-ის მართლწერის შემოწმების მორგება</string>
     <string name="show_emoji_key">ემოჯის ღილაკი</string>
     <string name="delete_swipe">ჟესტით წაშლა</string>

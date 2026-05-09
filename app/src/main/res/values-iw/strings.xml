@@ -108,7 +108,7 @@
     <string name="prefs_long_press_keyboard_to_change_lang">שינוי שיטת ההזנה על-ידי מקש רווח</string>
     <string name="show_emoji_key">מקש אמוג\'י</string>
     <string name="subtype_akkhor_bn_BD">%s (תווים)</string>
-    <string name="spell_checker_service_name">בודק האיות של HeliBoard</string>
+    <string name="spell_checker_service_name">בודק האיות של nopop</string>
     <string name="settings_category_clipboard_history">היסטוריית הלוח</string>
     <string name="autospace_after_punctuation">הוספת רווח אוטומטית אחרי סימני פיסוק</string>
     <string name="day_night_mode_summary">המראה יעקוב אחר הגדרות המערכת</string>

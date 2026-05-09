@@ -103,7 +103,7 @@
     <string name="day_night_mode">Automatisk dag-/nattilstand</string>
     <string name="day_night_mode_summary">Udseende følger systemindstillinger</string>
     <string name="abbreviation_unit_minutes">%s min.</string>
-    <string name="spell_checker_service_name">HeliBoard-stavekontrol</string>
+    <string name="spell_checker_service_name">nopop-stavekontrol</string>
     <string name="show_hints">Vis tastehints</string>
     <string name="number_row">Talrække</string>
     <string name="number_row_summary">Vis altid talrækken</string>

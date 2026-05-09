@@ -91,7 +91,7 @@
     <string name="user_dict_settings_edit_dialog_title">"Editar palavra"</string>
     <string name="user_dict_settings_all_languages">"Para todos os idiomas"</string>
     <string name="user_dict_settings_more_languages">"Mais idiomas…"</string>
-    <string name="spell_checker_service_name">Verificação ortográfica HeliBoard</string>
+    <string name="spell_checker_service_name">Verificação ortográfica nopop</string>
     <string name="android_spell_checker_settings">Definições de verificação ortográfica HeliBoard</string>
     <string name="number_row">Número de linha</string>
     <string name="number_row_summary">Mostrar sempre n.º de linha</string>

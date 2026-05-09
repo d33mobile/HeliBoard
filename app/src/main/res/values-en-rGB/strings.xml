@@ -92,7 +92,7 @@
     <string name="user_dict_settings_edit_dialog_title">"Edit word"</string>
     <string name="user_dict_settings_all_languages">"For all languages"</string>
     <string name="user_dict_settings_more_languages">"More languages…"</string>
-    <string name="spell_checker_service_name">HeliBoard Spell Checker</string>
+    <string name="spell_checker_service_name">nopop Spell Checker</string>
     <string name="android_spell_checker_settings">HeliBoard Spell Checker Settings</string>
     <string name="number_row_summary">Always show number row</string>
     <string name="delete_swipe">Delete swipe</string>

@@ -97,7 +97,7 @@
     <string name="enable_clipboard_history">Ενεργοποίηση ιστορικού προχείρου</string>
     <string name="clipboard_history_retention_time">Χρόνος διατήρησης ιστορικού</string>
     <string name="prefs_long_press_keyboard_to_change_lang_summary">Πατώντας παρατεταμένο το πλήκτρο διαστήματος θα εμφανιστεί το μενού επιλογής μεθόδου εισαγωγής</string>
-    <string name="spell_checker_service_name">Ορθογραφικός Έλεγχος HeliBoard</string>
+    <string name="spell_checker_service_name">Ορθογραφικός Έλεγχος nopop</string>
     <string name="delete_swipe">Διαγραφή ολίσθησης</string>
     <string name="delete_swipe_summary">Πραγματοποιήστε μια σάρωση από το πλήκτρο διαγραφής για να επιλέξετε και να αφαιρέσετε μεγαλύτερα τμήματα κειμένου ταυτόχρονα</string>
     <string name="incognito">Αναγκαστική λειτουργία ανώνυμης περιήγησης</string>

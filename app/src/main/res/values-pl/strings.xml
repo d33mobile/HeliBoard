@@ -100,7 +100,7 @@
     <string name="more_keys_strip_description">Więcej klawiszy</string>
     <string name="number_row">Rząd numeryczny</string>
     <string name="show_emoji_key">Klawisz emotikonów</string>
-    <string name="spell_checker_service_name">Sprawdzanie pisowni HeliBoard</string>
+    <string name="spell_checker_service_name">Sprawdzanie pisowni nopop</string>
     <string name="android_spell_checker_settings">Ustawienia sprawdzania pisowni HeliBoard</string>
     <string name="settings_category_clipboard_history">Historia schowka</string>
     <string name="enable_clipboard_history">Włącz historię schowka</string>

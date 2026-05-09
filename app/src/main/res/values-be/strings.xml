@@ -104,7 +104,7 @@
     <string name="ime_settings">Налады HeliBoard</string>
     <string name="settings_category_input">Ўвод</string>
     <string name="settings_category_additional_keys">Дадатковыя клавішы</string>
-    <string name="spell_checker_service_name">Праверка правапісу HeliBoard</string>
+    <string name="spell_checker_service_name">Праверка правапісу nopop</string>
     <string name="enable_clipboard_history">Ўключыць гісторыю буфера абмену</string>
     <string name="enable_clipboard_history_summary">Калі выключана, клавіша буфера абмену будзе ўстаўляць змесціва буфера абмену, калі яно ёсць</string>
     <string name="clipboard_history_retention_time">Час захоўвання гісторыі буфера абмену</string>

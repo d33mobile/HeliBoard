@@ -113,7 +113,7 @@
     <string name="theme_colors">Litir</string>
     <string name="style_name_Rounded" tools:keep="@string/style_name_Rounded">Rúnnað</string>
     <string name="theme_style">Stíll</string>
-    <string name="spell_checker_service_name">Stafsetningarleiðrétting HeliBoard</string>
+    <string name="spell_checker_service_name">Stafsetningarleiðrétting nopop</string>
     <string name="ime_settings">Stillingar HeliBoard</string>
     <string name="button_backup">Öryggisafrit</string>
     <string name="load_gesture_library_button_load">Hlaða inn orðasafni</string>

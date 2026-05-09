@@ -101,7 +101,7 @@
     <string name="settings_no_limit">Bez limitu</string>
     <string name="enable_clipboard_history">Povolit historii schránky</string>
     <string name="clipboard_history_retention_time">Doba zachování historie</string>
-    <string name="spell_checker_service_name">Kontrola pravopisu HeliBoard</string>
+    <string name="spell_checker_service_name">Kontrola pravopisu nopop</string>
     <string name="android_spell_checker_settings">Nastavení kontroly pravopisu HeliBoard</string>
     <string name="autospace_after_punctuation_summary">Automaticky vloží mezeru po ukončení slova znaménkem</string>
     <string name="incognito">Vynutit režim inkognito</string>
