@@ -23,26 +23,10 @@ fun getTextWithAutoCorrectionIndicatorUnderline(context: Context?, text: String,
 }
 
 fun getTextWithSuggestionSpan(context: Context, pickedWord: String, suggestedWords: SuggestedWords, locale: Locale): CharSequence {
-    if (pickedWord.isEmpty() || suggestedWords.isEmpty
-        || suggestedWords.isPrediction || suggestedWords.isPunctuationSuggestions
-    ) {
-        return pickedWord
-    }
-    val suggestionsList = mutableListOf<String>()
-    for (i in 0 until suggestedWords.size()) {
-        if (suggestionsList.size >= SuggestionSpan.SUGGESTIONS_MAX_SIZE) {
-            break
-        }
-        val info = suggestedWords.getInfo(i)
-        if (info.isKindOf(SuggestedWords.SuggestedWordInfo.KIND_PREDICTION)) {
-            continue
-        }
-        if (pickedWord != info.mWord) {
-            suggestionsList.add(info.mWord)
-        }
-    }
-    val suggestionSpan = SuggestionSpan(context, locale, suggestionsList.toTypedArray(), 0, null)
-    val spannable = SpannableString(pickedWord)
-    spannable.setSpan(suggestionSpan, 0, pickedWord.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-    return spannable
+    // nopopup fork: don't attach the IME's autocomplete candidates as a
+    // SuggestionSpan on committed text. Combined with the empty-array
+    // SuggestionsInfo from AndroidWordLevelSpellCheckerSession, this leaves
+    // the system long-press popup with no suggestion list, so it shows only
+    // "Add to dictionary" / "Delete".
+    return pickedWord
 }
