@@ -11,12 +11,24 @@ plugins {
 android {
     compileSdk = 36
 
+    signingConfigs {
+        create("releaseFork") {
+            val ksPath = System.getenv("HELIBOARD_KEYSTORE")
+            if (ksPath != null) {
+                storeFile = file(ksPath)
+                storePassword = System.getenv("HELIBOARD_KEYSTORE_PASS") ?: "heliboard-nopopup"
+                keyAlias = System.getenv("HELIBOARD_KEY_ALIAS") ?: "heliboard-nopopup"
+                keyPassword = System.getenv("HELIBOARD_KEY_PASS") ?: "heliboard-nopopup"
+            }
+        }
+    }
+
     defaultConfig {
-        applicationId = "helium314.keyboard"
+        applicationId = "helium314.keyboard.nopopup"
         minSdk = 21
         targetSdk = 36
-        versionCode = 3901
-        versionName = "3.9"
+        versionCode = 3901001
+        versionName = "3.9-nopopup1"
         ndk {
             abiFilters.clear()
             abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
@@ -30,6 +42,9 @@ android {
             isShrinkResources = false
             isDebuggable = false
             isJniDebuggable = false
+            if (System.getenv("HELIBOARD_KEYSTORE") != null) {
+                signingConfig = signingConfigs.getByName("releaseFork")
+            }
         }
         create("nouserlib") { // same as release, but does not allow the user to provide a library
             isMinifyEnabled = true

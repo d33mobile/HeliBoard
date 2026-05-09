@@ -361,7 +361,10 @@ public abstract class AndroidWordLevelSpellCheckerSession extends Session {
                     | (result.mHasRecommendedSuggestions
                             ? SuggestionsInfo.RESULT_ATTR_HAS_RECOMMENDED_SUGGESTIONS
                             : 0);
-            final SuggestionsInfo retval = new SuggestionsInfo(flags, result.mSuggestions);
+            // nopopup fork: drop the spell-check suggestion list so the system
+            // suggestions popup only offers "Add to dictionary"/"Delete".
+            // The RESULT_ATTR_LOOKS_LIKE_TYPO flag is preserved.
+            final SuggestionsInfo retval = new SuggestionsInfo(flags, new String[0]);
             mSuggestionsCache.putSuggestionsToCache(text, result.mSuggestions, flags);
             return retval;
         } catch (RuntimeException e) {
