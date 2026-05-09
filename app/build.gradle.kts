@@ -31,14 +31,18 @@ android {
         versionName = "3.9-nopopup1"
         ndk {
             abiFilters.clear()
-            abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
+            // nopopup fork: build only arm ABIs to keep build cheap; phones today are
+            // overwhelmingly arm64-v8a, with armeabi-v7a kept for older 32-bit devices.
+            abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a"))
         }
         proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = true
+            // nopopup fork: minify disabled to keep build memory low on the
+            // small Hetzner box where this gets built. APK is bigger but ok.
+            isMinifyEnabled = false
             isShrinkResources = false
             isDebuggable = false
             isJniDebuggable = false
@@ -97,6 +101,15 @@ android {
     externalNativeBuild {
         ndkBuild {
             path = File("src/main/jni/Android.mk")
+        }
+    }
+    // nopopup fork: limit NDK parallelism so the build doesn't OOM the daemon
+    // when several CC1 processes spawn in parallel on a tight-memory box.
+    defaultConfig {
+        externalNativeBuild {
+            ndkBuild {
+                arguments("-j1")
+            }
         }
     }
     ndkVersion = "28.0.13004108"
