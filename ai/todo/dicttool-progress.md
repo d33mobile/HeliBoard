@@ -10,8 +10,8 @@ Decompiled encoder: `/tmp/dec/`.
 ## Faza 0 — fork i lokalna walidacja
 - [x] Recon: encoder + decoder code mapped (zob. plan §5,6)
 - [x] Repro bugu z `-ea` na `main_pl_v2.combined`
-- [ ] Pobrać AOSP dicttool source (lub użyć decompile)
-- [ ] Postawić build pipeline dla dicttool jar (ant/gradle)
+- [x] Pobrać AOSP dicttool source (`/tmp/aosp-dicttool/` z `android.googlesource.com/platform/packages/inputmethods/LatinIME`)
+- [ ] Postawić build pipeline dla dicttool jar (ant/gradle) — Android.bp jest soong-only, trzeba ręczne javac
 - [ ] Powtórzyć repro własnym buildem (sanity check że build infra działa)
 
 ## Faza 1 — encoder patch
@@ -53,3 +53,4 @@ Decompiled encoder: `/tmp/dec/`.
 
 ### Iteracje
 - 2026-05-10 ~13:30 — plan napisany, progress tracker zainicjowany
+- 2026-05-10 ~13:35 — clone AOSP LatinIME source (`/tmp/aosp-dicttool/`). Encoder source: `tests/src/com/android/inputmethod/latin/makedict/BinaryDictEncoderUtils.java` (37 java files w dicttool, encoder w tests/ bo separated od runtime). FormatSpec w `java/src/com/android/inputmethod/latin/makedict/`. Build: Android.bp jest soong-only, do lokalnego buildu trzeba ręczne `javac` lub Gradle, do zrobienia w nast. iteracji.
