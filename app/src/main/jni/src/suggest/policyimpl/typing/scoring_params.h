@@ -38,6 +38,12 @@ class ScoringParams {
     static const float CASE_ERROR_PENALTY_FOR_EXACT_MATCH;
     static const float ACCENT_ERROR_PENALTY_FOR_EXACT_MATCH;
     static const float DIGRAPH_PENALTY_FOR_EXACT_MATCH;
+    // nopopup fork: positive boost for "exact-match-with-missing-accent"
+    // candidates so that, given user typed "fleksje" and dict has both
+    // "fleksje" and "fleksję", the diacriticized form ranks first. Polish
+    // (and many other) users frequently skip diacritics on hard-to-reach
+    // keys, so the diacriticized dict form is more often the intended one.
+    static const float MISSING_ACCENT_PROMOTION_BOOST;
 
     // Numerically optimized parameters (currently for tap typing only).
     // TODO: add ability to modify these constants programmatically.

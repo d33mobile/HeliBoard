@@ -83,7 +83,14 @@ class TypingScoring : public Scoring {
                     score -= ScoringParams::CASE_ERROR_PENALTY_FOR_EXACT_MATCH;
                 }
                 if ((ErrorTypeUtils::MATCH_WITH_MISSING_ACCENT & containedErrorTypes) != 0) {
-                    score -= ScoringParams::ACCENT_ERROR_PENALTY_FOR_EXACT_MATCH;
+                    // nopopup fork: prefer the diacriticized form when user typed
+                    // base letter. Originally this branch SUBTRACTED a small
+                    // penalty (0.02), making "fleksje" rank above "fleksję"
+                    // when both exist in dict. Polish (and many other) users
+                    // typically skip diacritics on hard-to-reach keys, so the
+                    // diacriticized dict form is more often the intended one.
+                    // Net: exact = 1.10, missing-accent = 1.10 + 0.05 = 1.15.
+                    score += ScoringParams::MISSING_ACCENT_PROMOTION_BOOST;
                 }
                 if ((ErrorTypeUtils::MATCH_WITH_DIGRAPH & containedErrorTypes) != 0) {
                     score -= ScoringParams::DIGRAPH_PENALTY_FOR_EXACT_MATCH;

@@ -28,6 +28,10 @@ const float ScoringParams::PERFECT_MATCH_PROMOTION = 1.1f;
 const float ScoringParams::CASE_ERROR_PENALTY_FOR_EXACT_MATCH = 0.01f;
 const float ScoringParams::ACCENT_ERROR_PENALTY_FOR_EXACT_MATCH = 0.02f;
 const float ScoringParams::DIGRAPH_PENALTY_FOR_EXACT_MATCH = 0.03f;
+// Larger than EXACT_MATCH_PROMOTION's penalty system (0.02 / 0.01 / 0.03) but
+// small relative to EXACT_MATCH_PROMOTION (1.1) so it only breaks ties between
+// otherwise-equal candidates. Exact: 1.10. Diacritic: 1.10 + 0.05 = 1.15.
+const float ScoringParams::MISSING_ACCENT_PROMOTION_BOOST = 0.05f;
 
 // TODO: Unlimit max cache dic node size
 const int ScoringParams::MAX_CACHE_DIC_NODE_SIZE = 170;
