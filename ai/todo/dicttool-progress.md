@@ -39,7 +39,7 @@ Decompiled encoder: `/tmp/dec/`.
 - [x] Java: `FormatSpec.java` add VERSION203
 - [x] Java: `BinaryDictionaryUtils.java` whitelist bumping — niepotrzebne, native side waliduje przez `format_utils.cpp::getFormatVersion`
 - [ ] Native unit tests — pominę, integration test pokaże
-- [ ] Build APK z patchem (nopopup7 z runtime support dla v203)
+- [/] Build APK z patchem (nopopup7 z runtime support dla v203) — version bumped, build kicked off w tle (PID 1097320 wrapper, 1097565 daemon), log w /tmp/heliboard-build-v203.log. Builds zwykle wymagają retry po OOM przy mergeDexRelease, kolejna iteracja sprawdzi.
 - [ ] Manual integration test na phone (po deploy):
   - [ ] Stary v202 dict dalej działa (regression)
   - [ ] Nowy v203 dict załadowany, brak krzaków przy `z`
@@ -62,3 +62,4 @@ Decompiled encoder: `/tmp/dec/`.
 - 2026-05-10 ~14:05 — research prior art przed inwestycją: nikt nie zrobił. AOSP nie ruszał format od 2014 (ostatnia commit lut 2025 = test infra cleanup). HeliBoard issues: #2476 to UI feature dla dict editor, nie ma issue o 16MB / krzakach. Codeberg aosp-dictionaries 27 issues wszystkie to language requests. Github code search "VERSION203 dict" = 0 trafień związanych. Forki aosp-dictionaries (10+) tylko dodają języki. Czyste pole, własna implementacja jedyną drogą.
 - 2026-05-10 ~14:11 — **Faza 1 zamknięta**. Patched dicttool jar `/tmp/aosp-dicttool/build/dicttool_aosp_v203.jar` (186 KB) zbudowany. Eksperymentalna weryfikacja: pl 3.77M form → v203 → 20.7 MB plik z header `00 CB` (203). Same wordlist → v202 (default) → `RuntimeException("address X >= 16 MB cannot be encoded in VERSION202; use VERSION203 (-203 flag)")` zamiast silent corruption. Mały test.combined v202 nadal byte-identical do upstream. Threading version przez `Ver2DictEncoder.mFormatVersion` field + nowe overloady w `BinaryDictEncoderUtils`. Edycje commited do `/tmp/aosp-dicttool/` (nie do tego repo, źródła AOSP są poza repo nopop).
 - 2026-05-10 ~14:15 — **Faza 2 patches applied**. Native: `format_utils.h` (VERSION_203 enum), `format_utils.cpp` (case w `getFormatVersion`), `patricia_trie_reading_utils.cpp` (sentinel detect w THREEBYTES case = jeśli u24 == 0xFFFFFF, read u32 jako extended), `bigram_list_read_write_utils.cpp` (analogiczny sentinel detect dla bigram offset). Java: `FormatSpec.java` (VERSION203 const). Sentinel detect bezpieczny dla v202 dictów bo encoder v202 nigdy nie produkował 0xFFFFFF (assert by trippil). Następna iteracja: build APK + integration test.
+- 2026-05-10 ~14:18 — version bump nopopup6 → nopopup7. Release build kicked off w tle. APK będzie w `app/build/outputs/apk/release/HeliBoard_3.9-nopopup7-release.apk`.

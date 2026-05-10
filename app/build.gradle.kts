@@ -27,8 +27,8 @@ android {
         applicationId = "helium314.keyboard.nopopup"
         minSdk = 21
         targetSdk = 36
-        versionCode = 3901006
-        versionName = "3.9-nopopup6"
+        versionCode = 3901007
+        versionName = "3.9-nopopup7"
         ndk {
             abiFilters.clear()
             // nopopup fork: build only arm ABIs to keep build cheap; phones today are
