@@ -277,7 +277,7 @@ class EmojiSearchActivity : ComponentActivity() {
                 it.getOutputText()
             else
                 Character.toString(it.code)
-            Log.d(TRACE_TAG, ">> onStop: putExtra EMOJI='$emojiStr' (len=${emojiStr.length})")
+            Log.d(TRACE_TAG, ">> onStop: putExtra EMOJI='$emojiStr' (len=${emojiStr?.length ?: -1})")
             intent.putExtra(EMOJI_KEY, emojiStr)
 
             KeyboardSwitcher.getInstance().emojiPalettesView.addRecentKey(it)
