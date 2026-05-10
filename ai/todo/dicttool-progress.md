@@ -64,3 +64,4 @@ Decompiled encoder: `/tmp/dec/`.
 - 2026-05-10 ~14:15 — **Faza 2 patches applied**. Native: `format_utils.h` (VERSION_203 enum), `format_utils.cpp` (case w `getFormatVersion`), `patricia_trie_reading_utils.cpp` (sentinel detect w THREEBYTES case = jeśli u24 == 0xFFFFFF, read u32 jako extended), `bigram_list_read_write_utils.cpp` (analogiczny sentinel detect dla bigram offset). Java: `FormatSpec.java` (VERSION203 const). Sentinel detect bezpieczny dla v202 dictów bo encoder v202 nigdy nie produkował 0xFFFFFF (assert by trippil). Następna iteracja: build APK + integration test.
 - 2026-05-10 ~14:18 — version bump nopopup6 → nopopup7. Release build kicked off w tle. APK będzie w `app/build/outputs/apk/release/HeliBoard_3.9-nopopup7-release.apk`.
 - 2026-05-10 ~14:19 — build dalej toczy (NDK compile arm64). Czekam.
+- 2026-05-10 ~14:20 — build dalej, arm64 done, teraz armeabi-v7a NDK compile.
