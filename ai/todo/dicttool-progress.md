@@ -47,11 +47,11 @@ Decompiled encoder: `/tmp/dec/`.
   - [ ] `robiłem` nie czerwony
 
 ## Faza 3 — wykorzystanie i upstream
-- [ ] Regenerować `main_pl_hunspell.dict` w v203, wgrać na F-Droid repo
-- [ ] Bump versionCode HeliBoarda nopop, opublikować v3.9-nopopup7+ (z runtime patchem)
+- [x] Regenerować `main_pl_hunspell.dict` w v203, wgrać na F-Droid repo (`dicts/main_pl_hunspell_v203.dict`)
+- [x] Bump versionCode HeliBoarda nopop, opublikować v3.9-nopopup7 (z runtime patchem)
 - [ ] PR do `Helium314/HeliBoard` z decoder support
 - [ ] Issue/PR do `Helium314/aosp-dictionaries` z patched dicttool
-- [ ] Zregenerować `main_be.dict` (3.97M form, w stable!) jeśli też cierpi
+- [x] Zregenerować `main_be.dict` (3.97M form, w stable!) jeśli też cierpi — **NIE cierpi**, 15.97 MB tuż pod progiem 16 MB. Zero surrogate signature w binary scan. Belarusian działa as-is.
 
 ## Notatki
 
@@ -69,3 +69,5 @@ Decompiled encoder: `/tmp/dec/`.
 - 2026-05-10 ~14:21 — NDK obie ABI done, build w fazie resource processing. Następne: Kotlin compile, javac, dex (zwykle tu OOM przy 1.5G heap).
 - 2026-05-10 ~14:22 — pierwszy build OOM przy mergeDexRelease (znany pattern). Retry uruchomiony.
 - 2026-05-10 ~14:23 — **APK BUILT**. `HeliBoard_3.9-nopopup7-release.apk` 28.5 MB, signed v1+v2, native lib z patched decoder dla obu ABI. v203 dict (20.7 MB) wgrany razem na F-Droid repo jako `dicts/main_pl_hunspell_v203.dict`. Zostaje: integration test na phone (czekamy na user feedback).
+- 2026-05-10 ~14:25 — main_be.dict (białoruski, stable Codeberg) — **15.97 MB pod progiem 16 MB**, zero surrogate w binary scan, nie cierpi. Białoruski w be 3.97M form mieści się dzięki kompresji. v203 nie potrzebne dla tego dict.
+- 2026-05-10 ~14:25 — naprawiony zapomniany `git add dicts/main_pl_hunspell_v203.dict` w finalize.sh (dodawał tylko `repo/`, nie `dicts/`). Dict teraz live na F-Droid repo.
