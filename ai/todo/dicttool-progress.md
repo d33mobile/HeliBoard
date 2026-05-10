@@ -39,7 +39,8 @@ Decompiled encoder: `/tmp/dec/`.
 - [x] Java: `FormatSpec.java` add VERSION203
 - [x] Java: `BinaryDictionaryUtils.java` whitelist bumping — niepotrzebne, native side waliduje przez `format_utils.cpp::getFormatVersion`
 - [ ] Native unit tests — pominę, integration test pokaże
-- [/] Build APK z patchem (nopopup7 z runtime support dla v203) — version bumped, build kicked off w tle (PID 1097320 wrapper, 1097565 daemon), log w /tmp/heliboard-build-v203.log. Builds zwykle wymagają retry po OOM przy mergeDexRelease, kolejna iteracja sprawdzi.
+- [x] Build APK z patchem (nopopup7 z runtime support dla v203) — pierwszy run OOM przy mergeDex, drugi run BUILD SUCCESSFUL w 58s. APK 28.5 MB, signed v1+v2, applicationId helium314.keyboard.nopopup, label "nopop", versionCode 3901007.
+- [x] Deploy: APK pushnięty do F-Droid repo wraz z `main_pl_hunspell_v203.dict` (20.7 MB, header 00 CB)
 - [ ] Manual integration test na phone (po deploy):
   - [ ] Stary v202 dict dalej działa (regression)
   - [ ] Nowy v203 dict załadowany, brak krzaków przy `z`
@@ -66,3 +67,5 @@ Decompiled encoder: `/tmp/dec/`.
 - 2026-05-10 ~14:19 — build dalej toczy (NDK compile arm64). Czekam.
 - 2026-05-10 ~14:20 — build dalej, arm64 done, teraz armeabi-v7a NDK compile.
 - 2026-05-10 ~14:21 — NDK obie ABI done, build w fazie resource processing. Następne: Kotlin compile, javac, dex (zwykle tu OOM przy 1.5G heap).
+- 2026-05-10 ~14:22 — pierwszy build OOM przy mergeDexRelease (znany pattern). Retry uruchomiony.
+- 2026-05-10 ~14:23 — **APK BUILT**. `HeliBoard_3.9-nopopup7-release.apk` 28.5 MB, signed v1+v2, native lib z patched decoder dla obu ABI. v203 dict (20.7 MB) wgrany razem na F-Droid repo jako `dicts/main_pl_hunspell_v203.dict`. Zostaje: integration test na phone (czekamy na user feedback).
