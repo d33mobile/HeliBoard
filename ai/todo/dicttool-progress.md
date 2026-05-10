@@ -11,8 +11,8 @@ Decompiled encoder: `/tmp/dec/`.
 - [x] Recon: encoder + decoder code mapped (zob. plan §5,6)
 - [x] Repro bugu z `-ea` na `main_pl_v2.combined`
 - [x] Pobrać AOSP dicttool source (`/tmp/aosp-dicttool/` z `android.googlesource.com/platform/packages/inputmethods/LatinIME`)
-- [ ] Postawić build pipeline dla dicttool jar (ant/gradle) — Android.bp jest soong-only, trzeba ręczne javac
-- [ ] Powtórzyć repro własnym buildem (sanity check że build infra działa)
+- [x] Postawić build pipeline dla dicttool jar — ręczny javac, 85 src files, jar 186 KB (oryg 238 KB ale różnica to junit deps bundled)
+- [x] Powtórzyć repro własnym buildem — byte-identyczny output dla test.combined → test.dict
 
 ## Faza 1 — encoder patch
 - [ ] `BinaryDictEncoderUtils.getByteSize`: dodać warunek extended (>0xFFFFFE → 7)
@@ -54,3 +54,4 @@ Decompiled encoder: `/tmp/dec/`.
 ### Iteracje
 - 2026-05-10 ~13:30 — plan napisany, progress tracker zainicjowany
 - 2026-05-10 ~13:35 — clone AOSP LatinIME source (`/tmp/aosp-dicttool/`). Encoder source: `tests/src/com/android/inputmethod/latin/makedict/BinaryDictEncoderUtils.java` (37 java files w dicttool, encoder w tests/ bo separated od runtime). FormatSpec w `java/src/com/android/inputmethod/latin/makedict/`. Build: Android.bp jest soong-only, do lokalnego buildu trzeba ręczne `javac` lub Gradle, do zrobienia w nast. iteracji.
+- 2026-05-10 ~13:53 — build pipeline up. Used `javac` direct, deps z gradle-cached jars (jsr305, junit-4.13.2). `/tmp/aosp-dicttool/build/dicttool_aosp_local.jar` (186 KB) działa identycznie jak oryginalny `dicttool_aosp.jar` (238 KB), output dla `test.combined` byte-identyczny (`diff /tmp/test_local.dict /tmp/pldict/test.dict` = empty). Faza 0 zakończona.
