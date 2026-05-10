@@ -15,15 +15,17 @@ Decompiled encoder: `/tmp/dec/`.
 - [x] Powtórzyć repro własnym buildem — byte-identyczny output dla test.combined → test.dict
 
 ## Faza 1 — encoder patch
-- [ ] `BinaryDictEncoderUtils.getByteSize`: dodać warunek extended (>0xFFFFFE → 7)
-- [ ] `BinaryDictEncoderUtils.writeUIntToBuffer/Stream/DictBuffer`: case 7
-- [ ] `BinaryDictEncoderUtils.writeChildrenPosition`: case 7
-- [ ] `BinaryDictEncoderUtils.makePtNodeFlags`: case 7 (flags = THREEBYTES, sentinel ukryty)
-- [ ] `BinaryDictEncoderUtils.makeBigramFlags`: case 7
+- [x] `BinaryDictEncoderUtils.getByteSize`: dodać warunek extended (>0xFFFFFE → 7) + new overload z formatVersion
+- [x] `BinaryDictEncoderUtils.writeUIntToBuffer/Stream/DictBuffer`: case 7 (3 sentinel + 4 BE)
+- [x] `BinaryDictEncoderUtils.writeChildrenPosition`: case 7 + new overload z formatVersion
+- [x] `BinaryDictEncoderUtils.makePtNodeFlags`: case 7 (flags = THREEBYTES, sentinel ukryty)
+- [x] `BinaryDictEncoderUtils.makeBigramFlags`: case 7 = THREEBYTES
+- [ ] `BinaryDictEncoderUtils.getPtNodeMaximumSize` / `computeAddresses`: użyć PTNODE_MAX_ADDRESS_SIZE_V203 dla v203
 - [ ] `BinaryDictEncoderUtils.computeAddresses`: bumping `MAX_PASSES` jeśli potrzeba
-- [ ] `FormatSpec.VERSION203 = 203`
+- [x] `FormatSpec.VERSION203 = 203` + PTNODE_MAX_ADDRESS_SIZE_V203
 - [ ] `Makedict.java`: flag `-203`
 - [ ] `Ver2DictEncoder.java`: parametryzacja wersji header
+- [ ] Threading formatVersion przez `getOffsetToTargetNodeArrayDuringUpdate`, `computeActualPtNodeArraySize` etc.
 - [ ] Unit tests dla nowego format
 - [ ] Build patched dicttool jar
 - [ ] Run repro: 3.77M wordlist → v203 dict → success
@@ -55,3 +57,5 @@ Decompiled encoder: `/tmp/dec/`.
 - 2026-05-10 ~13:30 — plan napisany, progress tracker zainicjowany
 - 2026-05-10 ~13:35 — clone AOSP LatinIME source (`/tmp/aosp-dicttool/`). Encoder source: `tests/src/com/android/inputmethod/latin/makedict/BinaryDictEncoderUtils.java` (37 java files w dicttool, encoder w tests/ bo separated od runtime). FormatSpec w `java/src/com/android/inputmethod/latin/makedict/`. Build: Android.bp jest soong-only, do lokalnego buildu trzeba ręczne `javac` lub Gradle, do zrobienia w nast. iteracji.
 - 2026-05-10 ~13:53 — build pipeline up. Used `javac` direct, deps z gradle-cached jars (jsr305, junit-4.13.2). `/tmp/aosp-dicttool/build/dicttool_aosp_local.jar` (186 KB) działa identycznie jak oryginalny `dicttool_aosp.jar` (238 KB), output dla `test.combined` byte-identyczny (`diff /tmp/test_local.dict /tmp/pldict/test.dict` = empty). Faza 0 zakończona.
+- 2026-05-10 ~14:00 — Faza 1 patch w toku. Zaedytowane `/tmp/aosp-dicttool/`: FormatSpec.java (VERSION203 = 203, PTNODE_MAX_ADDRESS_SIZE_V203 = 7, PTNODE_ATTRIBUTE_MAX_ADDRESS_SIZE_V203 = 7), BinaryDictEncoderUtils.java (getByteSize z formatVersion overload, writeUIntToBuffer/Stream case 7, writeChildrenPosition case 7, makePtNodeFlags case 7 = THREEBYTES, makeBigramFlags case 7 = THREEBYTES). Zostaje: getPtNodeMaximumSize parametryzacja, computeAddresses MAX_PASSES check, Ver2DictEncoder version, Makedict.java -203 flag, build + test.
+- 2026-05-10 ~14:05 — research prior art przed inwestycją: nikt nie zrobił. AOSP nie ruszał format od 2014 (ostatnia commit lut 2025 = test infra cleanup). HeliBoard issues: #2476 to UI feature dla dict editor, nie ma issue o 16MB / krzakach. Codeberg aosp-dictionaries 27 issues wszystkie to language requests. Github code search "VERSION203 dict" = 0 trafień związanych. Forki aosp-dictionaries (10+) tylko dodają języki. Czyste pole, własna implementacja jedyną drogą.
