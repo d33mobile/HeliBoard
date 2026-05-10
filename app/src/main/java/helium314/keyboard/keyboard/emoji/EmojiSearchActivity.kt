@@ -109,6 +109,7 @@ import helium314.keyboard.latin.utils.prefs
 import kotlin.properties.Delegates
 
 private const val TAG = "emoji-search"
+private const val TRACE_TAG = "emoji-trace"
 
 /**
  * This activity is displayed in a gap created for it above the keyboard and below the host app, and disables the host app.
@@ -268,16 +269,20 @@ class EmojiSearchActivity : ComponentActivity() {
     }
 
     override fun onStop() {
+        Log.d(TRACE_TAG, ">> onStop: pressedKey=${pressedKey?.let { "code=${it.code} label='${it.label}'" } ?: "null"} imeClosed=$imeClosed")
         val intent = Intent(this, LatinIME::class.java).setAction(EMOJI_SEARCH_DONE_ACTION)
             .putExtra(IME_CLOSED_KEY, imeClosed)
         pressedKey?.let {
-            intent.putExtra(EMOJI_KEY, if (it.code == KeyCode.MULTIPLE_CODE_POINTS)
+            val emojiStr = if (it.code == KeyCode.MULTIPLE_CODE_POINTS)
                 it.getOutputText()
             else
-                Character.toString(it.code))
+                Character.toString(it.code)
+            Log.d(TRACE_TAG, ">> onStop: putExtra EMOJI='$emojiStr' (len=${emojiStr.length})")
+            intent.putExtra(EMOJI_KEY, emojiStr)
 
             KeyboardSwitcher.getInstance().emojiPalettesView.addRecentKey(it)
         }
+        Log.d(TRACE_TAG, ">> onStop: startService(intent action=${intent.action}, hasEmoji=${intent.hasExtra(EMOJI_KEY)})")
         startService(intent)
         super.onStop()
     }
@@ -314,6 +319,7 @@ class EmojiSearchActivity : ComponentActivity() {
             }
 
             override fun onReleaseKey(key: Key) {
+                Log.d(TRACE_TAG, ">> onReleaseKey: code=${key.code} label='${key.label}' outputText='${try { key.getOutputText() } catch (e: Throwable) { "<err:${e.javaClass.simpleName}>" }}'")
                 pressedKey = key
                 finish()
             }

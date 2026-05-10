@@ -1407,11 +1407,15 @@ public class LatinIME extends InputMethodService implements
     }
 
     public void onTextInput(final String rawText) {
+        Log.d("emoji-trace", ">> onTextInput: rawText='" + rawText + "' len=" + (rawText == null ? -1 : rawText.length())
+                + " ic=" + (getCurrentInputConnection() != null ? "ok" : "null")
+                + " editor=" + (getCurrentInputEditorInfo() == null ? "null" : getCurrentInputEditorInfo().packageName));
         // TODO: have the keyboard pass the correct key code when we need it.
         final Event event = Event.createSoftwareTextEvent(rawText, KeyCode.MULTIPLE_CODE_POINTS, null);
         final InputTransaction completeInputTransaction =
                 mInputLogic.onTextInput(mSettings.getCurrent(), event,
                         mKeyboardSwitcher.getKeyboardShiftMode(), mHandler);
+        Log.d("emoji-trace", ">> onTextInput: after mInputLogic.onTextInput, didAffectContents=" + completeInputTransaction.didAffectContents());
         updateStateAfterInputTransaction(completeInputTransaction);
         mInputLogic.restartSuggestionsOnWordTouchedByCursor(mSettings.getCurrent(), mKeyboardSwitcher.getCurrentKeyboardScript());
         mKeyboardSwitcher.onEvent(event, getCurrentAutoCapsState(), getCurrentRecapitalizeState());
@@ -1723,18 +1727,36 @@ public class LatinIME extends InputMethodService implements
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (intent != null && EmojiSearchActivity.EMOJI_SEARCH_DONE_ACTION.equals(intent.getAction()) && ! isEmojiSearch()) {
-            if (intent.getBooleanExtra(EmojiSearchActivity.IME_CLOSED_KEY, false)) {
-                requestHideSelf(0);
-            } else {
-                mHandler.postDelayed(() -> KeyboardSwitcher.getInstance().setEmojiKeyboard(), 100);
-                if (intent.hasExtra(EmojiSearchActivity.EMOJI_KEY)) {
-                     onTextInput(intent.getStringExtra(EmojiSearchActivity.EMOJI_KEY));
+        if (intent != null && EmojiSearchActivity.EMOJI_SEARCH_DONE_ACTION.equals(intent.getAction())) {
+            final boolean inEmojiSearch = isEmojiSearch();
+            final boolean imeClosed = intent.getBooleanExtra(EmojiSearchActivity.IME_CLOSED_KEY, false);
+            final boolean hasEmoji = intent.hasExtra(EmojiSearchActivity.EMOJI_KEY);
+            final String emojiText = intent.getStringExtra(EmojiSearchActivity.EMOJI_KEY);
+            Log.d("emoji-trace", ">> onStartCommand: action=" + intent.getAction()
+                    + " isEmojiSearch=" + inEmojiSearch
+                    + " imeClosed=" + imeClosed
+                    + " hasEmoji=" + hasEmoji
+                    + " emoji='" + emojiText + "'"
+                    + " editorInfo=" + (getCurrentInputEditorInfo() == null ? "null" : "package=" + getCurrentInputEditorInfo().packageName));
+            if (! inEmojiSearch) {
+                if (imeClosed) {
+                    Log.d("emoji-trace", ">> onStartCommand: imeClosed branch -> requestHideSelf");
+                    requestHideSelf(0);
+                } else {
+                    mHandler.postDelayed(() -> KeyboardSwitcher.getInstance().setEmojiKeyboard(), 100);
+                    if (hasEmoji) {
+                        Log.d("emoji-trace", ">> onStartCommand: -> onTextInput('" + emojiText + "')");
+                        onTextInput(emojiText);
+                    } else {
+                        Log.d("emoji-trace", ">> onStartCommand: hasEmoji=false, NOT calling onTextInput");
+                    }
                 }
-            }
 
-            stopSelf(startId); // Allow the service to be destroyed when unbound
-            return START_NOT_STICKY;
+                stopSelf(startId); // Allow the service to be destroyed when unbound
+                return START_NOT_STICKY;
+            } else {
+                Log.d("emoji-trace", ">> onStartCommand: SKIPPED because isEmojiSearch()=true (still in emoji search editor)");
+            }
         }
 
         return super.onStartCommand(intent, flags, startId);
