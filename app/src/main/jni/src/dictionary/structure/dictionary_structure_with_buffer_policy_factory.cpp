@@ -116,6 +116,7 @@ template<class DictConstants, class DictBuffers, class DictBuffersPtr, class Str
         case FormatUtils::VERSION_2:
         case FormatUtils::VERSION_201:
         case FormatUtils::VERSION_202:
+        case FormatUtils::VERSION_203:
             AKLOGE("Given path is a directory but the format is version 2xx. path: %s", path);
             break;
         case FormatUtils::VERSION_402: {
@@ -181,6 +182,10 @@ template<class DictConstants, class DictBuffers, class DictBuffersPtr, class Str
             AKLOGE("Dictionary versions 2 and 201 are incompatible with this version");
             break;
         case FormatUtils::VERSION_202:
+        case FormatUtils::VERSION_203:
+            // VERSION_203 reuses PatriciaTriePolicy — only encoding differs
+            // (children/bigram address may use sentinel-extended 4-byte form),
+            // and that's handled inside patricia_trie_reading_utils.cpp.
             return DictionaryStructureWithBufferPolicy::StructurePolicyPtr(
                     new PatriciaTriePolicy(std::move(mmappedBuffer)));
         case FormatUtils::VERSION_4_ONLY_FOR_TESTING:
