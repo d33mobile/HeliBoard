@@ -21,8 +21,11 @@ MIN_FREQ_SEEN = 60             # floor for any corpus-seen word (above unseen)
 MAX_FREQ = 255                 # uint8 ceiling
 
 def read_hermit(path):
-    """HermitDave format: 'word count' per line."""
-    out = defaultdict(int)
+    """HermitDave format: 'word count' per line. Returns (case_folded_counts,
+    case_sensitive_counts) so the caller can disambiguate true proper nouns
+    from sentence-initial common words."""
+    folded = defaultdict(int)
+    cased = defaultdict(int)
     with open(path, encoding="utf-8") as f:
         for line in f:
             parts = line.split()
@@ -30,14 +33,18 @@ def read_hermit(path):
                 continue
             word, cnt = parts[0], parts[1]
             try:
-                out[word.lower()] += int(cnt)
+                c = int(cnt)
             except ValueError:
                 continue
-    return out
+            folded[word.lower()] += c
+            cased[word] += c
+    return folded, cased
 
 def read_leipzig(path):
-    """Leipzig: 'rank<TAB>word<TAB>count' per line."""
-    out = defaultdict(int)
+    """Leipzig: 'rank<TAB>word<TAB>count' per line. Same dual-return as
+    read_hermit."""
+    folded = defaultdict(int)
+    cased = defaultdict(int)
     with open(path, encoding="utf-8") as f:
         for line in f:
             parts = line.rstrip("\n").split("\t")
@@ -45,10 +52,12 @@ def read_leipzig(path):
                 continue
             _, word, cnt = parts
             try:
-                out[word.lower()] += int(cnt)
+                c = int(cnt)
             except ValueError:
                 continue
-    return out
+            folded[word.lower()] += c
+            cased[word] += c
+    return folded, cased
 
 def is_word(w):
     if not w:
@@ -68,38 +77,67 @@ def freq_to_uint8(weighted, top_weighted):
     mapped = MIN_FREQ_SEEN + int(round(log_w / log_top * span))
     return max(MIN_FREQ_SEEN, min(MAX_FREQ, mapped))
 
+def collect_all_forms(combined_in):
+    """Pre-pass: collect every word the wordlist contains. Caller will use
+    membership to detect case-collisions like kawałków/Kawałków or
+    warszawa/Warszawa where hunspell unmunch emitted both spellings."""
+    present = set()
+    with open(combined_in, encoding="utf-8") as f:
+        next(f, None)  # header
+        for line in f:
+            stripped = line.strip()
+            if not stripped.startswith("word="):
+                continue
+            try:
+                word_part, _ = stripped.split(",", 1)
+                word = word_part[len("word="):]
+            except ValueError:
+                continue
+            if word:
+                present.add(word)
+    return present
+
+
 def main(combined_in, subs_path, news_path, wiki_path, combined_out):
+    print(f"Pre-scanning {combined_in} for case duplicates...", file=sys.stderr)
+    all_forms = collect_all_forms(combined_in)
+    print(f"  {len(all_forms)} distinct entries", file=sys.stderr)
+
     print(f"Reading subs from {subs_path}...", file=sys.stderr)
-    subs = read_hermit(subs_path)
-    print(f"  {len(subs)} unique words", file=sys.stderr)
+    subs_folded, subs_cased = read_hermit(subs_path)
+    print(f"  {len(subs_folded)} unique words (folded)", file=sys.stderr)
 
     print(f"Reading news from {news_path}...", file=sys.stderr)
-    news = read_leipzig(news_path)
-    print(f"  {len(news)} unique words", file=sys.stderr)
+    news_folded, news_cased = read_leipzig(news_path)
+    print(f"  {len(news_folded)} unique words (folded)", file=sys.stderr)
 
     print(f"Reading wiki from {wiki_path}...", file=sys.stderr)
-    wiki = read_leipzig(wiki_path)
-    print(f"  {len(wiki)} unique words", file=sys.stderr)
+    wiki_folded, wiki_cased = read_leipzig(wiki_path)
+    print(f"  {len(wiki_folded)} unique words (folded)", file=sys.stderr)
 
     # Combine: weight subs:news:wiki = 1:1:1 normalised by corpus size.
     # Each corpus contributes its share of word counts; the relative ranking
     # within the corpus is preserved, but no single corpus dominates.
-    total_subs = sum(subs.values()) or 1
-    total_news = sum(news.values()) or 1
-    total_wiki = sum(wiki.values()) or 1
+    total_subs = sum(subs_folded.values()) or 1
+    total_news = sum(news_folded.values()) or 1
+    total_wiki = sum(wiki_folded.values()) or 1
     print(f"Total tokens: subs={total_subs} news={total_news} wiki={total_wiki}", file=sys.stderr)
 
-    weighted = defaultdict(float)
+    weighted = defaultdict(float)         # by case-folded form
+    weighted_cased = defaultdict(float)   # by exact case
     SCALE = 1_000_000
-    for w, c in subs.items():
-        if is_word(w):
-            weighted[w] += c / total_subs * SCALE
-    for w, c in news.items():
-        if is_word(w):
-            weighted[w] += c / total_news * SCALE
-    for w, c in wiki.items():
-        if is_word(w):
-            weighted[w] += c / total_wiki * SCALE
+
+    def add(folded_map, cased_map, total):
+        for w, c in folded_map.items():
+            if is_word(w):
+                weighted[w] += c / total * SCALE
+        for w, c in cased_map.items():
+            if is_word(w):
+                weighted_cased[w] += c / total * SCALE
+
+    add(subs_folded, subs_cased, total_subs)
+    add(news_folded, news_cased, total_news)
+    add(wiki_folded, wiki_cased, total_wiki)
 
     top_weighted = max(weighted.values())
     print(f"Top weighted: {top_weighted:.0f}", file=sys.stderr)
@@ -143,6 +181,46 @@ def main(combined_in, subs_path, news_path, wiki_path, combined_out):
             else:
                 n_unseen += 1
                 freq = BASE_FREQ_UNSEEN
+            # Disambiguate case-collisions in the hunspell wordlist.
+            # Unmunch routinely emits both 'kawałków' (gen-pl of kawałek)
+            # AND 'Kawałków' (a Małopolska village), and both 'warszawa'
+            # (a junk lowercase) AND 'Warszawa' (the city). Without help
+            # they end up with identical merged freq (lookup is case-folded)
+            # and the engine picks one arbitrarily — silently capitalising
+            # the user's lowercase input, or vice versa.
+            #
+            # Resolve via the case-sensitive corpus split: whichever spelling
+            # dominates raw text gets to keep its freq; the other is treated
+            # as unmunch noise and demoted to BASE_FREQ_UNSEEN. Comparable
+            # counts (e.g. 'Maria' the name + 'maria' the common noun) leave
+            # both untouched.
+            cap_variant = lw[:1].upper() + lw[1:] if lw else ""
+            has_lc_twin = lw in all_forms
+            has_cap_twin = cap_variant != lw and cap_variant in all_forms
+            if has_lc_twin and has_cap_twin:
+                lc_count = weighted_cased.get(lw, 0)
+                cap_count = weighted_cased.get(cap_variant, 0)
+                tot = lc_count + cap_count
+                if tot > 0:
+                    # Dominance threshold of 0.95 (not 0.7): we only knock
+                    # out the rarer spelling when one form is *overwhelmingly*
+                    # dominant, e.g. kawałków:Kawałków ≈ 4500:10 (dom 0.998)
+                    # or Warszawa:warszawa ≈ 6300:30 (dom 0.995). At ratios
+                    # like Polski:polski ≈ 5500:735 (dom 0.88) both forms
+                    # are genuinely common (proper-noun and adjective usage)
+                    # and demoting either would silently rewrite the user's
+                    # input.
+                    DOMINANCE = 0.95
+                    if word == lw and cap_count / tot > DOMINANCE:
+                        # processing the lowercase entry, but Capitalized
+                        # dominates raw text (Warszawa case) → this lowercase
+                        # is the artefact.
+                        freq = BASE_FREQ_UNSEEN
+                    elif word == cap_variant and lc_count / tot > DOMINANCE:
+                        # processing the Capitalized entry, but lowercase
+                        # dominates raw text (kawałków case) → this
+                        # Capitalized is the artefact.
+                        freq = BASE_FREQ_UNSEEN
             fout.write(f" word={word},f={freq}\n")
 
     print(f"Wrote {n_total} words: {n_seen} seen, {n_unseen} unseen", file=sys.stderr)
