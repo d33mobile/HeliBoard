@@ -163,6 +163,11 @@ public final class FormatSpec {
     public static final int VERSION2 = 2;
     public static final int VERSION201 = 201;
     public static final int VERSION202 = 202;
+    // VERSION203 (HeliBoard nopopup fork): VERSION202 with sentinel-based 4-byte
+    // extended children/bigram address. Read at runtime by the patched native
+    // PtReadingUtils — when a 3-byte address reads as 0xFFFFFF, the next 4
+    // bytes are the actual 32-bit unsigned offset. Allows trie size up to 4 GiB.
+    public static final int VERSION203 = 203;
     // format version for Fava Dictionaries.
     public static final int VERSION_DELIGHT3 = 86736212;
     public static final int MINIMUM_SUPPORTED_VERSION_OF_CODE_POINT_TABLE = VERSION201;

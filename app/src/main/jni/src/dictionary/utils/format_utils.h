@@ -37,6 +37,12 @@ class FormatUtils {
         VERSION_2 = 2,
         VERSION_201 = 201,
         VERSION_202 = 202,
+        // VERSION_203 (HeliBoard fork): VERSION_202 with sentinel-based 4-byte
+        // extended children/bigram addressing. Required to read tries > 16 MB
+        // produced by patched dicttool (-203 flag). Read path detects the
+        // 0xFFFFFF sentinel inside what would normally be a 3-byte address
+        // field and switches to a 4-byte unsigned read for the actual offset.
+        VERSION_203 = 203,
         VERSION_4_ONLY_FOR_TESTING = 399,
         VERSION_402 = 402,
         VERSION_403 = 403,

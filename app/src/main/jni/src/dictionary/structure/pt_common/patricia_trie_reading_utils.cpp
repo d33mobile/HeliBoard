@@ -124,6 +124,14 @@ const PtReadingUtils::NodeFlags PtReadingUtils::FLAG_IS_POSSIBLY_OFFENSIVE = 0x0
             break;
         case FLAG_CHILDREN_POSITION_TYPE_THREEBYTES:
             offset = ByteArrayUtils::readUint24AndAdvancePosition(buffer, pos);
+            // VERSION_203 sentinel: 0xFFFFFF in 3-byte field signals an extended
+            // 4-byte address follows. Safe in v202 too because the v202 encoder
+            // would have tripped its assert (address <= 16777215) before
+            // writing 0xFFFFFF, so this branch is dead for v202 dicts.
+            if (offset == 0xFFFFFF) {
+                offset = static_cast<int>(
+                        ByteArrayUtils::readUint32AndAdvancePosition(buffer, pos));
+            }
             break;
         default:
             // If we come here, it means we asked for the children of a word with

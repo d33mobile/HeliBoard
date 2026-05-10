@@ -83,6 +83,14 @@ const BigramListReadWriteUtils::BigramFlags
             break;
         case FLAG_ATTRIBUTE_ADDRESS_TYPE_THREEBYTES:
             offset = ByteArrayUtils::readUint24AndAdvancePosition(buffer.data(), pos);
+            // VERSION_203 sentinel: 0xFFFFFF in 3-byte field signals an
+            // extended 4-byte address follows. Same safety argument as the
+            // children-position reader: v202 dicts never contain 0xFFFFFF
+            // because the v202 encoder asserted address <= 16777215.
+            if (offset == 0xFFFFFF) {
+                offset = static_cast<int>(
+                        ByteArrayUtils::readUint32AndAdvancePosition(buffer.data(), pos));
+            }
             break;
     }
     if (isOffsetNegative(flags)) {
