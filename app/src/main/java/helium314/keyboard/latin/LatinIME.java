@@ -1728,38 +1728,43 @@ public class LatinIME extends InputMethodService implements
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null && EmojiSearchActivity.EMOJI_SEARCH_DONE_ACTION.equals(intent.getAction())) {
-            final boolean inEmojiSearch = isEmojiSearch();
-            final boolean imeClosed = intent.getBooleanExtra(EmojiSearchActivity.IME_CLOSED_KEY, false);
-            final boolean hasEmoji = intent.hasExtra(EmojiSearchActivity.EMOJI_KEY);
-            final String emojiText = intent.getStringExtra(EmojiSearchActivity.EMOJI_KEY);
             Log.d("emoji-trace", ">> onStartCommand: action=" + intent.getAction()
-                    + " isEmojiSearch=" + inEmojiSearch
-                    + " imeClosed=" + imeClosed
-                    + " hasEmoji=" + hasEmoji
-                    + " emoji='" + emojiText + "'"
+                    + " isEmojiSearch=" + isEmojiSearch()
+                    + " imeClosed=" + intent.getBooleanExtra(EmojiSearchActivity.IME_CLOSED_KEY, false)
+                    + " hasEmoji=" + intent.hasExtra(EmojiSearchActivity.EMOJI_KEY)
+                    + " emoji='" + intent.getStringExtra(EmojiSearchActivity.EMOJI_KEY) + "'"
                     + " editorInfo=" + (getCurrentInputEditorInfo() == null ? "null" : "package=" + getCurrentInputEditorInfo().packageName));
-            if (! inEmojiSearch) {
-                if (imeClosed) {
-                    Log.d("emoji-trace", ">> onStartCommand: imeClosed branch -> requestHideSelf");
-                    requestHideSelf(0);
-                } else {
-                    mHandler.postDelayed(() -> KeyboardSwitcher.getInstance().setEmojiKeyboard(), 100);
-                    if (hasEmoji) {
-                        Log.d("emoji-trace", ">> onStartCommand: -> onTextInput('" + emojiText + "')");
-                        onTextInput(emojiText);
-                    } else {
-                        Log.d("emoji-trace", ">> onStartCommand: hasEmoji=false, NOT calling onTextInput");
-                    }
-                }
-
-                stopSelf(startId); // Allow the service to be destroyed when unbound
-                return START_NOT_STICKY;
-            } else {
-                Log.d("emoji-trace", ">> onStartCommand: SKIPPED because isEmojiSearch()=true (still in emoji search editor)");
-            }
+            // The intent comes from EmojiSearchActivity.onStop (synchronous startService).
+            // Android then switches the IME's bound input from the search activity's
+            // text field back to the host app a few ms later. If we run onTextInput
+            // before that switch, isEmojiSearch() is still true and the original
+            // upstream code took the `! isEmojiSearch()` early-return — so the picked
+            // emoji never reached the host app. Poll for the flip, then commit.
+            handleEmojiSearchDoneDeferred(intent, 0);
+            stopSelf(startId);
+            return START_NOT_STICKY;
         }
 
         return super.onStartCommand(intent, flags, startId);
+    }
+
+    private void handleEmojiSearchDoneDeferred(final Intent intent, final int attempt) {
+        if (isEmojiSearch() && attempt < 10) {
+            Log.d("emoji-trace", ">> deferred: isEmojiSearch still true, attempt=" + attempt + ", retry in 50ms");
+            mHandler.postDelayed(() -> handleEmojiSearchDoneDeferred(intent, attempt + 1), 50);
+            return;
+        }
+        Log.d("emoji-trace", ">> deferred: proceeding after attempt=" + attempt
+                + " isEmojiSearch=" + isEmojiSearch()
+                + " editor=" + (getCurrentInputEditorInfo() == null ? "null" : getCurrentInputEditorInfo().packageName));
+        if (intent.getBooleanExtra(EmojiSearchActivity.IME_CLOSED_KEY, false)) {
+            requestHideSelf(0);
+        } else {
+            mHandler.postDelayed(() -> KeyboardSwitcher.getInstance().setEmojiKeyboard(), 100);
+            if (intent.hasExtra(EmojiSearchActivity.EMOJI_KEY)) {
+                onTextInput(intent.getStringExtra(EmojiSearchActivity.EMOJI_KEY));
+            }
+        }
     }
 
     public boolean isEmojiSearch() {
