@@ -49,8 +49,8 @@ Decompiled encoder: `/tmp/dec/`.
 ## Faza 3 — wykorzystanie i upstream
 - [x] Regenerować `main_pl_hunspell.dict` w v203, wgrać na F-Droid repo (`dicts/main_pl_hunspell_v203.dict`)
 - [x] Bump versionCode HeliBoarda nopop, opublikować v3.9-nopopup7 (z runtime patchem)
-- [ ] PR do `Helium314/HeliBoard` z decoder support
-- [ ] Issue/PR do `Helium314/aosp-dictionaries` z patched dicttool
+- [/] PR do `Helium314/HeliBoard` z decoder support — plan napisany w `upstream-pr-heliboard.md`. Faktyczne otworzenie wymaga ręcznego cleanup (split nopopup-specyfic od v203-specyfic) + filing przez gh.
+- [/] Issue/PR do `Helium314/aosp-dictionaries` z patched dicttool — plan w `upstream-pr-aosp-dictionaries.md`. Codeberg, brak gh CLI, faktyczne filing przez web UI.
 - [x] Zregenerować `main_be.dict` (3.97M form, w stable!) jeśli też cierpi — **NIE cierpi**, 15.97 MB tuż pod progiem 16 MB. Zero surrogate signature w binary scan. Belarusian działa as-is.
 
 ## Notatki
@@ -71,3 +71,4 @@ Decompiled encoder: `/tmp/dec/`.
 - 2026-05-10 ~14:23 — **APK BUILT**. `HeliBoard_3.9-nopopup7-release.apk` 28.5 MB, signed v1+v2, native lib z patched decoder dla obu ABI. v203 dict (20.7 MB) wgrany razem na F-Droid repo jako `dicts/main_pl_hunspell_v203.dict`. Zostaje: integration test na phone (czekamy na user feedback).
 - 2026-05-10 ~14:25 — main_be.dict (białoruski, stable Codeberg) — **15.97 MB pod progiem 16 MB**, zero surrogate w binary scan, nie cierpi. Białoruski w be 3.97M form mieści się dzięki kompresji. v203 nie potrzebne dla tego dict.
 - 2026-05-10 ~14:25 — naprawiony zapomniany `git add dicts/main_pl_hunspell_v203.dict` w finalize.sh (dodawał tylko `repo/`, nie `dicts/`). Dict teraz live na F-Droid repo.
+- 2026-05-10 ~14:27 — PR plans saved: `upstream-pr-heliboard.md` (~31 LOC patch, 5 files, gh CLI flow) + `upstream-pr-aosp-dictionaries.md` (jar replace + README, Codeberg web UI flow). Faktyczne otworzenie wymaga: ręczny cleanup nopopup-specyfic vs v203-specyfic w forku, fork upstream, file PR. Plus: aosp-dictionaries by też mogło dostać PR do `remi0s/aosp-dictionary-tools` (źródło jara). Te trzy PR-y zostają jako TODO dla user'a — miejscowe code patches już na nopopup branchu.
