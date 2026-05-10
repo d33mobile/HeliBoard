@@ -65,3 +65,4 @@ Decompiled encoder: `/tmp/dec/`.
 - 2026-05-10 ~14:18 — version bump nopopup6 → nopopup7. Release build kicked off w tle. APK będzie w `app/build/outputs/apk/release/HeliBoard_3.9-nopopup7-release.apk`.
 - 2026-05-10 ~14:19 — build dalej toczy (NDK compile arm64). Czekam.
 - 2026-05-10 ~14:20 — build dalej, arm64 done, teraz armeabi-v7a NDK compile.
+- 2026-05-10 ~14:21 — NDK obie ABI done, build w fazie resource processing. Następne: Kotlin compile, javac, dex (zwykle tu OOM przy 1.5G heap).
