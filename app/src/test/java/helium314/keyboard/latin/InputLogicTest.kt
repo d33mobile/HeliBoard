@@ -727,6 +727,23 @@ class InputLogicTest {
         assertEquals("test", InputLogic.getInlineEmojiSearchString(",:test"))
         assertEquals(null, InputLogic.getInlineEmojiSearchString(":test\nt"))
         assertEquals("/48", InputLogic.getInlineEmojiSearchString("2606:127.0.0.1::/48")) // do we want this?
+
+        // nopopup fork: ':' + ASCII-emoticon head + space should bail out so
+        // typing ':c rozu' stops looking like an emoji search after the space.
+        assertEquals(null, InputLogic.getInlineEmojiSearchString(":c rozu"))
+        assertEquals(null, InputLogic.getInlineEmojiSearchString(":D haha"))
+        assertEquals(null, InputLogic.getInlineEmojiSearchString(":) hi"))
+        assertEquals(null, InputLogic.getInlineEmojiSearchString(":( yes"))
+        assertEquals(null, InputLogic.getInlineEmojiSearchString(":o ok"))
+        assertEquals(null, InputLogic.getInlineEmojiSearchString(":P dalej"))
+        // No-space single emoticon should still trigger the search — the fork
+        // doesn't second-guess until the user signals they've moved on.
+        assertEquals("c", InputLogic.getInlineEmojiSearchString(":c"))
+        assertEquals("D", InputLogic.getInlineEmojiSearchString(":D"))
+        // Legit multi-word emoji search keeps working: the head has 2+ letters.
+        assertEquals("rocket ship", InputLogic.getInlineEmojiSearchString(":rocket ship"))
+        assertEquals("hi there", InputLogic.getInlineEmojiSearchString(":hi there"))
+        assertEquals("fire truck", InputLogic.getInlineEmojiSearchString(":fire truck"))
     }
 
     // ------- helper functions ---------
