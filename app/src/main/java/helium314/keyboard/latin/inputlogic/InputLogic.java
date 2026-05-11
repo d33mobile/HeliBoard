@@ -2745,7 +2745,43 @@ public final class InputLogic {
             return null;
         }
 
-        return text.substring(markerIndex + 1);
+        var query = text.substring(markerIndex + 1);
+        // nopopup fork: bail when the bit before the first space inside the
+        // query looks like an ASCII emoticon (1-letter suffix or no letters
+        // at all). Without this, typing ':c rozu' kept inline emoji search
+        // active across the space because the upstream rule only forbids a
+        // space immediately after ':'. The pattern of "':' + short non-word
+        // token + space + more text" is almost always somebody typing a
+        // smiley and continuing their sentence, not a multi-word emoji
+        // search. Legit multi-word searches like ':fire truck' still pass
+        // because 'fire' is 4 letters.
+        var firstSpace = indexOfSpace(query);
+        if (firstSpace >= 0) {
+            var head = query.substring(0, firstSpace);
+            if (looksLikeAsciiEmoticonSuffix(head)) {
+                return null;
+            }
+        }
+        return query;
+    }
+
+    private static int indexOfSpace(String s) {
+        for (int i = 0; i < s.length(); i++) {
+            if (Character.isWhitespace(s.charAt(i))) return i;
+        }
+        return -1;
+    }
+
+    private static boolean looksLikeAsciiEmoticonSuffix(String head) {
+        if (head.isEmpty()) return true;
+        // Any letter at all in the head → probably an actual emoji keyword.
+        // Allow exactly one alphabetic char so ':c'/':D'/':P'/':o' triggers.
+        int letterCount = 0;
+        for (int i = 0; i < head.length(); i++) {
+            if (Character.isLetter(head.codePointAt(i))) letterCount++;
+            if (letterCount > 1) return false;
+        }
+        return true;
     }
 
     // public for testing
