@@ -1,0 +1,14 @@
+# Polish words missing from hunspell pl_PL that real users routinely type.
+# Format: one word per line. Lines beginning with # are comments.
+#
+# Hunspell pl_PL follows prescriptive rules and excludes colloquial /
+# informal forms even when they're common in real Polish text. The merger
+# reads this file and inserts each non-comment entry into the combined
+# wordlist with the same corpus-weighted frequency treatment as
+# hunspell-attested words.
+#
+# Currently empty — the mechanism is in place but we haven't found a
+# colloquial form whose addition was clearly justified (e.g. 'możnaby'
+# was rejected on review because the prescriptive 'można by' is the only
+# accepted spelling and we don't want the keyboard normalising user
+# typing toward an incorrect form).

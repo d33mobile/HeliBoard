@@ -70,6 +70,33 @@ def classify(input_str, candidate):
         return 'accent_only' if missing_accent_only else 'case_and_accent'
     return 'no_match'
 
+def rank(query, candidates):
+    """Public API for tests: takes a query string and an iterable of
+    (word, freq) tuples, returns a sorted list of (score, word, freq, kind)
+    tuples in descending score order. Skips candidates that don't have the
+    same length+base+lower form as the query (i.e. only considers exact-up-
+    to-case/accent matches; gross misspellings are out of scope for this
+    sim)."""
+    out = []
+    for w, f in candidates:
+        if len(w) != len(query):
+            continue
+        if base_lower(w) != base_lower(query):
+            continue
+        k = classify(query, w)
+        if k == 'no_match':
+            continue
+        out.append((score(f, k), w, f, k))
+    out.sort(key=lambda x: -x[0])
+    return out
+
+
+def winner(query, candidates):
+    """Convenience for tests: returns top-ranked word, or None if no match."""
+    r = rank(query, candidates)
+    return r[0][1] if r else None
+
+
 def score(freq, kind):
     """Mirror calculateFinalScore for the boostExactMatches=true, hasProbabilityZero=false branch."""
     # compoundDistance is ~0 for an exact char-for-char match, so the

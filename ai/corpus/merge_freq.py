@@ -77,6 +77,24 @@ def freq_to_uint8(weighted, top_weighted):
     mapped = MIN_FREQ_SEEN + int(round(log_w / log_top * span))
     return max(MIN_FREQ_SEEN, min(MAX_FREQ, mapped))
 
+def read_additions(path):
+    """Curated list of words to inject even when hunspell rejects them.
+    One word per line; '#' starts a comment. Returns set of strings."""
+    out = set()
+    try:
+        with open(path, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                if " " in line or "," in line:
+                    continue
+                out.add(line)
+    except FileNotFoundError:
+        pass
+    return out
+
+
 def collect_all_forms(combined_in):
     """Pre-pass: collect every word the wordlist contains. Caller will use
     membership to detect case-collisions like kawałków/Kawałków or
@@ -98,10 +116,16 @@ def collect_all_forms(combined_in):
     return present
 
 
-def main(combined_in, subs_path, news_path, wiki_path, combined_out):
+def main(combined_in, subs_path, news_path, wiki_path, combined_out, additions_path=None):
     print(f"Pre-scanning {combined_in} for case duplicates...", file=sys.stderr)
     all_forms = collect_all_forms(combined_in)
     print(f"  {len(all_forms)} distinct entries", file=sys.stderr)
+
+    additions = read_additions(additions_path) if additions_path else set()
+    # Only words not already in wordlist actually need to be injected.
+    additions_to_inject = {w for w in additions if w not in all_forms}
+    print(f"  {len(additions)} addition candidates, {len(additions_to_inject)} new", file=sys.stderr)
+    all_forms |= additions_to_inject
 
     print(f"Reading subs from {subs_path}...", file=sys.stderr)
     subs_folded, subs_cased = read_hermit(subs_path)
@@ -223,11 +247,25 @@ def main(combined_in, subs_path, news_path, wiki_path, combined_out):
                         freq = BASE_FREQ_UNSEEN
             fout.write(f" word={word},f={freq}\n")
 
-    print(f"Wrote {n_total} words: {n_seen} seen, {n_unseen} unseen", file=sys.stderr)
+        # Curated additions for words hunspell pl_PL rejects but real users
+        # type (colloquial forms like 'możnaby'). Each gets the same
+        # corpus-weighted freq treatment as hunspell-attested words.
+        n_added = 0
+        for addition in sorted(additions_to_inject):
+            lw = addition.lower()
+            w_count = weighted.get(lw, 0)
+            if w_count > 0:
+                freq = freq_to_uint8(w_count, top_weighted)
+            else:
+                freq = BASE_FREQ_UNSEEN
+            fout.write(f" word={addition},f={freq}\n")
+            n_added += 1
+
+    print(f"Wrote {n_total} hunspell-words: {n_seen} seen, {n_unseen} unseen, plus {n_added} curated additions", file=sys.stderr)
     print(f"  pct seen: {n_seen / n_total * 100:.1f}%", file=sys.stderr)
 
 if __name__ == "__main__":
-    if len(sys.argv) != 6:
-        print(f"usage: {sys.argv[0]} <combined_in> <subs.txt> <news_words.txt> <wiki_words.txt> <combined_out>", file=sys.stderr)
+    if len(sys.argv) not in (6, 7):
+        print(f"usage: {sys.argv[0]} <combined_in> <subs.txt> <news_words.txt> <wiki_words.txt> <combined_out> [additions.txt]", file=sys.stderr)
         sys.exit(1)
     main(*sys.argv[1:])
