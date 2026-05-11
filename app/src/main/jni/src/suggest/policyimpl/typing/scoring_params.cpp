@@ -28,10 +28,16 @@ const float ScoringParams::PERFECT_MATCH_PROMOTION = 1.1f;
 const float ScoringParams::CASE_ERROR_PENALTY_FOR_EXACT_MATCH = 0.01f;
 const float ScoringParams::ACCENT_ERROR_PENALTY_FOR_EXACT_MATCH = 0.02f;
 const float ScoringParams::DIGRAPH_PENALTY_FOR_EXACT_MATCH = 0.03f;
-// Larger than EXACT_MATCH_PROMOTION's penalty system (0.02 / 0.01 / 0.03) but
-// small relative to EXACT_MATCH_PROMOTION (1.1) so it only breaks ties between
-// otherwise-equal candidates. Exact: 1.10. Diacritic: 1.10 + 0.05 = 1.15.
-const float ScoringParams::MISSING_ACCENT_PROMOTION_BOOST = 0.05f;
+// Sized to break ties between exact-base-letter and missing-accent candidates
+// of similar frequency, without overriding a clear freq advantage that the
+// corpus has assigned to the exact form. Frequency moves the score by
+// roughly 0.0001 per uint8-freq-unit; 0.003 ≈ 30 freq points of overhead.
+// In practice that means: typing 'fleksje' (f≈50 exact, fleksję f≈63 attested)
+// → fleksję wins by ~0.0013 + boost = 0.0043; typing 'Warszawa' (f≈155 exact,
+// Warszawą f≈110 attested) → Warszawa keeps its 0.0045 freq edge with 0.0015
+// margin after the boost. The earlier 0.05 value (5x larger) overrode every
+// freq difference and turned 'Warszawa' into 'Warszawą'.
+const float ScoringParams::MISSING_ACCENT_PROMOTION_BOOST = 0.003f;
 
 // TODO: Unlimit max cache dic node size
 const int ScoringParams::MAX_CACHE_DIC_NODE_SIZE = 170;

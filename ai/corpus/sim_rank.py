@@ -19,8 +19,10 @@ from collections import defaultdict
 # Ripped verbatim from app/src/main/jni/src/suggest/policyimpl/typing/scoring_params.cpp
 EXACT_MATCH_PROMOTION = 1.10
 CASE_ERROR_PENALTY = 0.01
-# nopopup fork: was 0.02 penalty for missing-accent, flipped to +0.05 boost
-MISSING_ACCENT_PROMOTION_BOOST = 0.05
+# nopopup fork: was 0.02 penalty for missing-accent, flipped to +boost (tuned
+# to break ties without overriding a clear freq advantage; mirror of the value
+# in scoring_params.cpp).
+MISSING_ACCENT_PROMOTION_BOOST = 0.003
 TYPING_BASE_OUTPUT_SCORE = 1.0
 SUGGEST_INTERFACE_OUTPUT_SCALE = 1_000_000.0  # see defines.h
 

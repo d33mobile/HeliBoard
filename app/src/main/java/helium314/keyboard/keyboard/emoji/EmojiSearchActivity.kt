@@ -109,6 +109,12 @@ import helium314.keyboard.latin.utils.prefs
 import kotlin.properties.Delegates
 
 private const val TAG = "emoji-search"
+// emoji-trace was a one-shot diagnostic tag used in nopopup10-11 to capture
+// the race where startService landed before Android rebound the IME's input
+// from the search activity back to the host editor. The deferred handler in
+// LatinIME.handleEmojiSearchDoneDeferred made it unnecessary; leaving the tag
+// in place for now so any future log-grep against past Save-log exports still
+// finds matches.
 private const val TRACE_TAG = "emoji-trace"
 
 /**
