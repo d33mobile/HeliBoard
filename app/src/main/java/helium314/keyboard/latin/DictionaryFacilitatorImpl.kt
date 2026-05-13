@@ -522,11 +522,27 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
     ): List<SuggestedWordInfo> {
         val suggestions = ArrayList<SuggestedWordInfo>()
         val weightForLocale = dictGroup.getWeightForLocale(dictionaryGroups, composedData.mIsBatchMode)
+        // nopopup fork: tap-to-debug. When the user types one of the words
+        // listed in `DEBUG_TRIGGER_INPUTS`, dump every candidate from every
+        // dict to the in-app log so we can see in Save-log what is winning
+        // and from which source. Costs nothing in the common case (Strings
+        // compared cheaply, the typed word is rebuilt from composedData
+        // each call anyway).
+        val typedWord = composedData.mTypedWord
+        val traceDebug = DEBUG_TRIGGER_INPUTS.contains(typedWord)
+
         for (dictType in DictionaryFacilitator.ALL_DICTIONARY_TYPES) {
             val dictionary = dictGroup.getDict(dictType) ?: continue
             val dictionarySuggestions = dictionary.getSuggestions(composedData, ngramContext, proximityInfoHandle,
                 settingsValuesForSuggestion, sessionId, weightForLocale, weightOfLangModelVsSpatialModel
             ) ?: continue
+
+            if (traceDebug) {
+                Log.d(TAG, ">> trace: dict=$dictType returned ${dictionarySuggestions.size} candidates for typed='$typedWord'")
+                for ((i, info) in dictionarySuggestions.withIndex()) {
+                    Log.d(TAG, ">>   $i: word='${info.word}' score=${info.mScore} kindAndFlags=${info.mKindAndFlags.toString(16)} sourceDict=${info.mSourceDict?.mDictType} isExactMatch=${info.isExactMatch}")
+                }
+            }
 
             // For some reason "garbage" words are produced when glide typing. For user history
             // and main dictionaries we can filter them out by checking whether the dictionary
@@ -553,6 +569,12 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
                     continue
 
                 suggestions.add(info)
+            }
+        }
+        if (traceDebug) {
+            Log.d(TAG, ">> trace: final suggestions list for '$typedWord' (size=${suggestions.size}):")
+            for ((i, info) in suggestions.sortedByDescending { it.mScore }.take(20).withIndex()) {
+                Log.d(TAG, ">>   #$i: '${info.word}' score=${info.mScore} src=${info.mSourceDict?.mDictType}")
             }
         }
         return suggestions
@@ -616,6 +638,17 @@ class DictionaryFacilitatorImpl : DictionaryFacilitator {
 
     companion object {
         private val TAG = DictionaryFacilitatorImpl::class.java.simpleName
+
+        // nopopup fork: typing any of these as the in-progress word triggers a
+        // tap-to-debug dump from getSuggestions. Keeps logging surgical so the
+        // in-app log doesn't fill with noise from ordinary typing. To diagnose
+        // a 'wrong suggestion' report: add the typed input here, install the
+        // build, reproduce, Settings → About → Save log, share the file.
+        private val DEBUG_TRIGGER_INPUTS = setOf(
+            "zrobilas",
+            "wrocilas",
+            "wróciłaś",
+        )
 
         // HACK: This threshold is being used when adding a capitalized entry in the User History dictionary.
         private const val CAPITALIZED_FORM_MAX_PROBABILITY_FOR_INSERT = 140
