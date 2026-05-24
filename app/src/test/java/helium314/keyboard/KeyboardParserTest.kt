@@ -469,11 +469,29 @@ f""", // no newline at the end
     }
 
     @Test fun `polish qwerty — diacritics last in popup, not first`() {
-        // Regression: user wants long-press to favor digits/punctuation. Diacritics still accessible,
-        // just at the END of popup keys list (so first popup pressed = digit/symbol, not diacritic).
-        // Before fix: 'a' popup = [ą, @, à, …] — ą primary. After fix: [@, à, …, ą] — ą last.
+        assertPolishDiacriticsLast(popupOrderExtra = null)
+    }
+
+    @Test fun `polish qwerty — diacritics still last even with old upstream popup order saved`() {
+        // The simple Defaults.PREF_POPUP_KEYS_ORDER change only affects fresh installs — Android
+        // SharedPreferences don't get default-rewritten on upgrade. Users who once opened the
+        // 'Popup key order' settings screen will have kept the old order (language_priority first).
+        // createPopupKeysArray must demote language_priority to end regardless of pref value.
+        // This subtype mimics that legacy state: PopupOrder extraValue overrides global pref and
+        // puts language_priority first.
+        val legacyOrder = "language_priority:true|number:true|symbols:true|layout:true|language:true"
+        assertPolishDiacriticsLast(popupOrderExtra = legacyOrder)
+    }
+
+    private fun assertPolishDiacriticsLast(popupOrderExtra: String?) {
         val editorInfo = EditorInfo()
-        val subtype = SubtypeUtilsAdditional.createEmojiCapableAdditionalSubtype(Locale.forLanguageTag("pl"), "qwerty", true)
+        val subtype = if (popupOrderExtra == null) {
+            SubtypeUtilsAdditional.createEmojiCapableAdditionalSubtype(Locale.forLanguageTag("pl"), "qwerty", true)
+        } else {
+            val extra = "${helium314.keyboard.latin.common.Constants.Subtype.ExtraValue.KEYBOARD_LAYOUT_SET}=MAIN:qwerty," +
+                "${helium314.keyboard.latin.common.Constants.Subtype.ExtraValue.POPUP_ORDER}=$popupOrderExtra"
+            SubtypeUtilsAdditional.createAdditionalSubtype(Locale.forLanguageTag("pl"), extra, true, true)
+        }
         val (kb, _) = buildKeyboard(editorInfo, subtype, KeyboardId.ELEMENT_ALPHABET)
         val diacritics = setOf("ą", "ę", "ó", "ś", "ń", "ć", "ż", "ź", "ł")
         val letterKeys = kb.sortedKeys.filter { it.label?.length == 1 && it.label?.first()?.isLetter() == true }

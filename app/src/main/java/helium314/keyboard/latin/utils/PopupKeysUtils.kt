@@ -28,7 +28,14 @@ fun createPopupKeysArray(popupSet: PopupSet<*>?, params: KeyboardParams, label: 
     // often PopupKeys are empty, so we want to avoid unnecessarily creating sets
     val popupKeysDelegate = lazy { mutableSetOf<String>() }
     val popupKeys by popupKeysDelegate
-    val types = if (params.mId.isAlphabetKeyboard) params.mPopupKeyTypes else allPopupKeyTypes
+    val rawTypes = if (params.mId.isAlphabetKeyboard) params.mPopupKeyTypes else allPopupKeyTypes
+    // nopopup: always demote language_priority to last in long-press popup, regardless of user
+    // setting in popup_keys_order. The Defaults change in this file only takes effect for fresh
+    // installs (Android SharedPreferences don't get default-rewrite on app upgrade), so users
+    // who once opened the popup-order screen kept the old order. Forcing the reorder here is
+    // simpler than a per-version AppUpgrade migration and survives any future pref state.
+    val types = rawTypes.partition { it != POPUP_KEYS_LANGUAGE_PRIORITY }
+        .let { (normal, priorityTail) -> normal + priorityTail }
     types.forEach { type ->
         when (type) {
             POPUP_KEYS_NUMBER -> popupSet?.numberLabel?.let { popupKeys.add(it) }
