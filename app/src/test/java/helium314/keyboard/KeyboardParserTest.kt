@@ -468,6 +468,55 @@ f""", // no newline at the end
         }
     }
 
+    @Test fun `polish qwerty — diacritics last in popup, not first`() {
+        // Regression: user wants long-press to favor digits/punctuation. Diacritics still accessible,
+        // just at the END of popup keys list (so first popup pressed = digit/symbol, not diacritic).
+        // Before fix: 'a' popup = [ą, @, à, …] — ą primary. After fix: [@, à, …, ą] — ą last.
+        val editorInfo = EditorInfo()
+        val subtype = SubtypeUtilsAdditional.createEmojiCapableAdditionalSubtype(Locale.forLanguageTag("pl"), "qwerty", true)
+        val (kb, _) = buildKeyboard(editorInfo, subtype, KeyboardId.ELEMENT_ALPHABET)
+        val diacritics = setOf("ą", "ę", "ó", "ś", "ń", "ć", "ż", "ź", "ł")
+        val letterKeys = kb.sortedKeys.filter { it.label?.length == 1 && it.label?.first()?.isLetter() == true }
+        for (key in letterKeys) {
+            val popups = key.popupKeys?.mapNotNull { it.mLabel } ?: continue
+            if (popups.isEmpty()) continue
+            // first popup must NOT be a Polish diacritic (else user gets diacritic on quick long-press)
+            assertTrue(
+                popups.first() !in diacritics,
+                "key '${key.label}' first popup is a Polish diacritic '${popups.first()}' — expected digit/punctuation. Popups: $popups"
+            )
+            // each diacritic key still has its diacritic available — just somewhere in the list
+            val expectedDiacritic = when (key.label) {
+                "a" -> "ą"; "e" -> "ę"; "o" -> "ó"; "s" -> "ś"
+                "n" -> "ń"; "c" -> "ć"; "z" -> "ż"; "l" -> "ł"
+                else -> null
+            }
+            if (expectedDiacritic != null) {
+                assertTrue(
+                    expectedDiacritic in popups,
+                    "key '${key.label}' lost its diacritic '$expectedDiacritic'. Popups: $popups"
+                )
+            }
+        }
+    }
+
+    @Test fun `polish qwerty — dump hint + popup keys per letter`() {
+        val editorInfo = EditorInfo()
+        val subtype = SubtypeUtilsAdditional.createEmojiCapableAdditionalSubtype(Locale.forLanguageTag("pl"), "qwerty", true)
+        println("=== default popup_keys_order: ${helium314.keyboard.latin.settings.Defaults.PREF_POPUP_KEYS_ORDER}")
+        println("=== enabled popup key groups (in order): ${helium314.keyboard.latin.utils.getEnabledPopupKeys(helium314.keyboard.latin.settings.Defaults.PREF_POPUP_KEYS_ORDER)}")
+        println("=== default popup_keys_labels_order: ${helium314.keyboard.latin.settings.Defaults.PREF_POPUP_KEYS_LABELS_ORDER}")
+        println("=== enabled hint label sources (in order): ${helium314.keyboard.latin.utils.getEnabledPopupKeys(helium314.keyboard.latin.settings.Defaults.PREF_POPUP_KEYS_LABELS_ORDER)}")
+        val (kb, _) = buildKeyboard(editorInfo, subtype, KeyboardId.ELEMENT_ALPHABET)
+        println("=== polish qwerty alphabet keyboard ===")
+        println("format: label | hint | popup keys (in order)")
+        val letters = kb.sortedKeys.filter { it.label?.length == 1 && it.label?.first()?.isLetter() == true }
+        for (key in letters) {
+            val popups = key.popupKeys?.joinToString(", ") { it.mLabel ?: it.mIconName ?: "?" } ?: "(none)"
+            println("  ${key.label}  |  hint=${key.hintLabel ?: "(null)"}  |  popups=[$popups]")
+        }
+    }
+
     @Test fun parseExistingLayouts() {
         val dir = File("src/main/assets/layouts")
         dir.walk().forEach {
