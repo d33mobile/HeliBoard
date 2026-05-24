@@ -483,6 +483,27 @@ f""", // no newline at the end
         assertPolishDiacriticsLast(popupOrderExtra = legacyOrder)
     }
 
+    @Test fun `polish qwerty — hint label is not a diacritic even with stale HintOrder`() {
+        // Hint label (small character in corner of key) also has a per-pref order
+        // (popup_keys_labels_order). Same upgrade-pref-sticks problem as PopupOrder.
+        // getHintLabel must demote language_priority + language regardless of override
+        // so that hint stays digit/symbol-driven, not diacritic.
+        val staleHintOrder = "language_priority:true|number:true|layout:true|symbols:true|language:true"
+        val extra = "${helium314.keyboard.latin.common.Constants.Subtype.ExtraValue.KEYBOARD_LAYOUT_SET}=MAIN:qwerty," +
+            "${helium314.keyboard.latin.common.Constants.Subtype.ExtraValue.HINT_ORDER}=$staleHintOrder"
+        val subtype = SubtypeUtilsAdditional.createAdditionalSubtype(Locale.forLanguageTag("pl"), extra, true, true)
+        val (kb, _) = buildKeyboard(EditorInfo(), subtype, KeyboardId.ELEMENT_ALPHABET)
+        val diacritics = setOf("ą", "ę", "ó", "ś", "ń", "ć", "ż", "ź", "ł")
+        val letterKeys = kb.sortedKeys.filter { it.label?.length == 1 && it.label?.first()?.isLetter() == true }
+        for (key in letterKeys) {
+            val hint = key.hintLabel ?: continue
+            assertTrue(
+                hint !in diacritics,
+                "key '${key.label}' has hint '$hint' which is a Polish diacritic — expected digit/symbol"
+            )
+        }
+    }
+
     private fun assertPolishDiacriticsLast(popupOrderExtra: String?) {
         val editorInfo = EditorInfo()
         val subtype = if (popupOrderExtra == null) {

@@ -71,7 +71,14 @@ fun createPopupKeysArray(popupSet: PopupSet<*>?, params: KeyboardParams, label: 
 
 fun getHintLabel(popupSet: PopupSet<*>?, params: KeyboardParams, label: String): String? {
     var hintLabel: String? = null
-    for (type in params.mPopupKeyLabelSources) {
+    // nopopup: same partition trick as in createPopupKeysArray — push language_priority and
+    // language sources to the end of the lookup chain regardless of user setting. Upstream
+    // default already has them both disabled for hint, but users who once opened
+    // popup-keys-labels-order in Settings may have saved an override that enables them.
+    // Demoting them here means hint stays number/symbol/layout-driven even with that override.
+    val sources = params.mPopupKeyLabelSources.partition { it != POPUP_KEYS_LANGUAGE_PRIORITY && it != POPUP_KEYS_LANGUAGE }
+        .let { (normal, localeTail) -> normal + localeTail }
+    for (type in sources) {
         when (type) {
             POPUP_KEYS_NUMBER -> popupSet?.numberLabel?.let { hintLabel = it }
             POPUP_KEYS_LAYOUT -> popupSet?.getPopupKeyLabels(params)?.let { hintLabel = it.firstOrNull() }
