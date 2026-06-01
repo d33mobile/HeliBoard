@@ -29,13 +29,17 @@ fun createPopupKeysArray(popupSet: PopupSet<*>?, params: KeyboardParams, label: 
     val popupKeysDelegate = lazy { mutableSetOf<String>() }
     val popupKeys by popupKeysDelegate
     val rawTypes = if (params.mId.isAlphabetKeyboard) params.mPopupKeyTypes else allPopupKeyTypes
-    // nopopup: always demote language_priority to last in long-press popup, regardless of user
-    // setting in popup_keys_order. The Defaults change in this file only takes effect for fresh
-    // installs (Android SharedPreferences don't get default-rewrite on app upgrade), so users
-    // who once opened the popup-order screen kept the old order. Forcing the reorder here is
-    // simpler than a per-version AppUpgrade migration and survives any future pref state.
-    val types = rawTypes.partition { it != POPUP_KEYS_LANGUAGE_PRIORITY }
-        .let { (normal, priorityTail) -> normal + priorityTail }
+    // nopopup: when user has a locale-source setup (language or language_priority in their
+    // popup_keys_order pref / subtype POPUP_ORDER), hardcode the order to put number/symbol/
+    // layout first regardless of pref. Partition-only (nopopup19) was not enough: if user
+    // pref had number:false, popup ended with only locale entries and ę landed at index 0.
+    // We also force-enable number/symbols/layout in this branch so they appear in popup even
+    // if user disabled them. For test fixtures that only configure LAYOUT (simpleKey etc.)
+    // and don't carry locale sources, we don't touch the original order.
+    val isLocaleSetup = POPUP_KEYS_LANGUAGE_PRIORITY in rawTypes || POPUP_KEYS_LANGUAGE in rawTypes
+    val types = if (params.mId.isAlphabetKeyboard && isLocaleSetup) {
+        listOf(POPUP_KEYS_NUMBER, POPUP_KEYS_SYMBOLS, POPUP_KEYS_LAYOUT, POPUP_KEYS_LANGUAGE, POPUP_KEYS_LANGUAGE_PRIORITY)
+    } else rawTypes
     types.forEach { type ->
         when (type) {
             POPUP_KEYS_NUMBER -> popupSet?.numberLabel?.let { popupKeys.add(it) }
@@ -71,13 +75,13 @@ fun createPopupKeysArray(popupSet: PopupSet<*>?, params: KeyboardParams, label: 
 
 fun getHintLabel(popupSet: PopupSet<*>?, params: KeyboardParams, label: String): String? {
     var hintLabel: String? = null
-    // nopopup: same partition trick as in createPopupKeysArray — push language_priority and
-    // language sources to the end of the lookup chain regardless of user setting. Upstream
-    // default already has them both disabled for hint, but users who once opened
-    // popup-keys-labels-order in Settings may have saved an override that enables them.
-    // Demoting them here means hint stays number/symbol/layout-driven even with that override.
-    val sources = params.mPopupKeyLabelSources.partition { it != POPUP_KEYS_LANGUAGE_PRIORITY && it != POPUP_KEYS_LANGUAGE }
-        .let { (normal, localeTail) -> normal + localeTail }
+    // nopopup: hardcode hint-label source order for alphabet keyboard same way createPopupKeysArray
+    // does, to defeat any saved popup_keys_labels_order pref override. number/layout/symbols
+    // come first so the small label in key corner is a digit / layout-popup / symbol. locale
+    // sources are at the end as fallback only.
+    val sources = if (params.mId.isAlphabetKeyboard) {
+        listOf(POPUP_KEYS_NUMBER, POPUP_KEYS_LAYOUT, POPUP_KEYS_SYMBOLS, POPUP_KEYS_LANGUAGE_PRIORITY, POPUP_KEYS_LANGUAGE)
+    } else params.mPopupKeyLabelSources
     for (type in sources) {
         when (type) {
             POPUP_KEYS_NUMBER -> popupSet?.numberLabel?.let { hintLabel = it }

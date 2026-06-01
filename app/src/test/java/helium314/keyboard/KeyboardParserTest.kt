@@ -483,6 +483,17 @@ f""", // no newline at the end
         assertPolishDiacriticsLast(popupOrderExtra = legacyOrder)
     }
 
+    @Test fun `polish qwerty — even with number disabled in pref, popup default is not a diacritic`() {
+        // Stronger regression: user might have popup_keys_order with number:false (e.g. someone
+        // who customized to disable digits in long-press menu years ago). In that case the
+        // nopopup19 partition couldn't help because number wasn't in the list to begin with —
+        // language_priority still landed at position 0 of the popup, so ę was the default-
+        // selected popup on long-press of 'e'. nopopup21 hardcodes the order for alphabet
+        // keyboard regardless of pref, including forcing number to be present.
+        val disablingOrder = "language_priority:true|number:false|symbols:false|layout:false|language:true"
+        assertPolishDiacriticsLast(popupOrderExtra = disablingOrder)
+    }
+
     @Test fun `polish qwerty — hint label is not a diacritic even with stale HintOrder`() {
         // Hint label (small character in corner of key) also has a per-pref order
         // (popup_keys_labels_order). Same upgrade-pref-sticks problem as PopupOrder.
