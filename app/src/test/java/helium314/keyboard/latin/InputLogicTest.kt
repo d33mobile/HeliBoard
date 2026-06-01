@@ -746,6 +746,22 @@ class InputLogicTest {
         assertEquals("fire truck", InputLogic.getInlineEmojiSearchString(":fire truck"))
     }
 
+    // e2e regression for user-reported bug 2026-06-01: typing ':c da s' still
+    // produced emoji suggestions even though the second word should already
+    // have bailed out the inline emoji search (see ai/plans/emoji-search-
+    // multiword-bailout.md). Drives the full input flow through the IME so we
+    // catch regressions where the connection text disagrees with what the
+    // static helper would receive at runtime.
+    @Test fun inlineEmojiSearchSpaceBail() {
+        reset()
+        chainInput(":c da s")
+        // Whatever upstream autospace/punctuation handling does to the text,
+        // the inline-emoji-search query computed off the actual connection
+        // state must be null - otherwise emoji suggestions leak through.
+        val before = connection.getTextBeforeCursor(50, 0)?.toString().orEmpty()
+        assertEquals(null, InputLogic.getInlineEmojiSearchString(before))
+    }
+
     // ------- helper functions ---------
 
     // should be called before every test, so the same state is guaranteed

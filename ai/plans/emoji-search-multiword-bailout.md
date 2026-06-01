@@ -45,7 +45,7 @@ The harness `/loop` macro fires every 1 min in foreground subagent. Each tick is
 
 ## Tracker
 
-- [ ] Add integration test `inlineEmojiSearchSpaceBail` in `app/src/test/java/helium314/keyboard/latin/InputLogicTest.kt` that calls `chainInput(":c da s")` and checks emoji-search state. Test should ASSERT no-inline-emoji-search at end. Run via `./gradlew :app:testReleaseUnitTest --tests "*inlineEmojiSearchSpaceBail*"`.
+- [x] Add integration test `inlineEmojiSearchSpaceBail` in `app/src/test/java/helium314/keyboard/latin/InputLogicTest.kt` that calls `chainInput(":c da s")` and checks emoji-search state. Test should ASSERT no-inline-emoji-search at end. Run via `./gradlew :app:testReleaseUnitTest --tests "*inlineEmojiSearchSpaceBail*"`.
 - [ ] Run the test on `main..nopopup` head. Record output (pass / fail / specific behavior) under "Iteracje". If passes → bug is elsewhere; add second test for `PREF_INLINE_EMOJI_SEARCH=false` honoring.
 - [ ] If test reproduces bug: trace why (read `updateInlineEmojiSearch` call sites; check whether space input triggers it).
 - [ ] Patch: minimal change in `InputLogic.java` so that `:c da s` flow exits inline emoji search after the space. Keep upstream behavior for legitimate multi-word emoji search like `:fire truck`.
@@ -58,6 +58,7 @@ The harness `/loop` macro fires every 1 min in foreground subagent. Each tick is
 ## Iteracje
 
 - 2026-06-01 ~05:10 — plan napisany. Recon: helper `getInlineEmojiSearchString` w `InputLogic.java:2725` ma już bail-out na `:c rozu` (commit 2247607); unit test `inlineEmojiSearchString` covers go. Mismatch między static (zwraca null dla `:c da s`) a runtime (user widzi emoji) → suspect (d) z above: runtime state nie odświeża się po space.
+- 2026-06-01 ~05:15 — added e2e regression test `inlineEmojiSearchSpaceBail` in `InputLogicTest.kt`. Drives `chainInput(":c da s")` then calls `InputLogic.getInlineEmojiSearchString(connection.getTextBeforeCursor(50, 0))` and asserts null. PASSES on current HEAD, which means at the connection-text level the static helper does the right thing — so the runtime bug must be in how that helper's result is *applied* (the `setInlineEmojiSearchAction` / keyboard-reload path), not in what it computes. Next tick will run the test on a baseline (revert the `:c rozu` bail-out) to confirm it can demonstrably fail, and add a `PREF_INLINE_EMOJI_SEARCH=false` variant per Tracker item 2.
 
 ## Self-audit checklist (used by subagent)
 
