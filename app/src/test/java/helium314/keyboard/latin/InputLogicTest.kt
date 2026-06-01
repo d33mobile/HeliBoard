@@ -762,6 +762,25 @@ class InputLogicTest {
         assertEquals(null, InputLogic.getInlineEmojiSearchString(before))
     }
 
+    // Sanity regression for the second hypothesis in the bailout plan:
+    // does the PREF_INLINE_EMOJI_SEARCH pref actually propagate to
+    // SettingsValues? If this ever silently breaks, every fork-specific bail
+    // becomes moot because the runtime gating in updateEmojiDictionary keys
+    // off mInlineEmojiSearch. We assert both directions so a regression in
+    // either default or the read path shows up. Settings reload is triggered
+    // automatically via Settings.onSharedPreferenceChanged listener.
+    @Test fun inlineEmojiSearchPrefHonored() {
+        reset()
+        // Default pref value is `true` (see Defaults.PREF_INLINE_EMOJI_SEARCH).
+        assertEquals(true, settingsValues.mInlineEmojiSearch)
+
+        latinIME.prefs().edit { putBoolean(Settings.PREF_INLINE_EMOJI_SEARCH, false) }
+        assertEquals(false, settingsValues.mInlineEmojiSearch)
+
+        latinIME.prefs().edit { putBoolean(Settings.PREF_INLINE_EMOJI_SEARCH, true) }
+        assertEquals(true, settingsValues.mInlineEmojiSearch)
+    }
+
     // ------- helper functions ---------
 
     // should be called before every test, so the same state is guaranteed
