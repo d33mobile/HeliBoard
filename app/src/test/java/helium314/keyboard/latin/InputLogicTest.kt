@@ -12,9 +12,14 @@ import androidx.core.content.edit
 import helium314.keyboard.ShadowInputMethodManager2
 import helium314.keyboard.ShadowLocaleManagerCompat
 import helium314.keyboard.event.Event
+import helium314.keyboard.keyboard.Keyboard
+import helium314.keyboard.keyboard.KeyboardId
+import helium314.keyboard.keyboard.KeyboardLayoutSet
 import helium314.keyboard.keyboard.KeyboardSwitcher
 import helium314.keyboard.keyboard.MainKeyboardView
 import helium314.keyboard.keyboard.internal.keyboard_parser.floris.KeyCode
+import helium314.keyboard.latin.settings.SettingsValues
+import helium314.keyboard.latin.utils.RecapitalizeMode
 import helium314.keyboard.latin.ShadowFacilitator2.Companion.lastAddedWord
 import helium314.keyboard.latin.SuggestedWords.SuggestedWordInfo
 import helium314.keyboard.latin.common.Constants
@@ -747,19 +752,61 @@ class InputLogicTest {
     }
 
     // e2e regression for user-reported bug 2026-06-01: typing ':c da s' still
-    // produced emoji suggestions even though the second word should already
-    // have bailed out the inline emoji search (see ai/plans/emoji-search-
-    // multiword-bailout.md). Drives the full input flow through the IME so we
-    // catch regressions where the connection text disagrees with what the
-    // static helper would receive at runtime.
+    // produced emoji suggestions even though the static helper would say to
+    // bail. Root cause was that handleSeparatorEvent didn't re-evaluate the
+    // inline-emoji-search runtime layout state after committing a space, so
+    // the keyboard kept routing suggestions through searchForEmojiInline even
+    // when getInlineEmojiSearchString would have returned null.
+    //
+    // This test observes the runtime layout state (the InternalAction passed
+    // to KeyboardSwitcher.loadKeyboard, tracked by ShadowKeyboardSwitcher).
+    // It demonstrably FAILS when the updateInlineEmojiSearch() call in
+    // handleSeparatorEvent's CODE_SPACE branch is removed: ':c' flips inline
+    // mode ON and without the call the action stays ON forever.
     @Test fun inlineEmojiSearchSpaceBail() {
         reset()
-        chainInput(":c da s")
-        // Whatever upstream autospace/punctuation handling does to the text,
-        // the inline-emoji-search query computed off the actual connection
-        // state must be null - otherwise emoji suggestions leak through.
-        val before = connection.getTextBeforeCursor(50, 0)?.toString().orEmpty()
-        assertEquals(null, InputLogic.getInlineEmojiSearchString(before))
+        installFakeEmojiDictionaryFacilitator()
+        ShadowKeyboardSwitcher.resetForInlineEmojiTest()
+
+        // ':' alone does not enter inline mode (codePoint == marker bails out).
+        input(':')
+        assertEquals(null, currentInternalActionCode(), "no inline mode after ':'")
+
+        // ':c' is the canonical entry point for inline emoji search — the
+        // INLINE_EMOJI_SEARCH_DONE action must now be live. This confirms the
+        // test wiring works and that without a bail the system DOES enter the
+        // mode (otherwise the second assertion below would be vacuously true).
+        input('c')
+        assertEquals(KeyCode.INLINE_EMOJI_SEARCH_DONE, currentInternalActionCode(), "inline mode ON after ':c'")
+
+        // The space is the bail-out trigger. Per the static helper
+        // getInlineEmojiSearchString(":c ") returns null (head 'c' looks like
+        // an ASCII emoticon). The patch's job is to propagate that decision
+        // to the runtime layout. WITHOUT the patch, the action stays at
+        // INLINE_EMOJI_SEARCH_DONE; WITH the patch it flips back to null.
+        input(' ')
+        assertEquals(null, currentInternalActionCode(), "inline mode OFF after ':c '")
+
+        // Type the rest of ':c da s' as a sanity check — the action must
+        // remain OFF for the entire follow-up word. The user-reported symptom
+        // was emoji suggestions leaking across the second space exactly here.
+        chainInput("da s")
+        assertEquals(null, currentInternalActionCode(), "inline mode stays OFF through ':c da s'")
+    }
+
+    private fun currentInternalActionCode(): Int? =
+        ShadowKeyboardSwitcher.lastInternalAction?.code()
+
+    // The inline-emoji-search guard in InputLogic short-circuits when
+    // mEmojiDictionaryFacilitator is null. updateEmojiDictionary() would
+    // normally populate it from a real on-disk emoji dictionary, but the
+    // Robolectric tests don't have that file. Patch in a Mockito mock so the
+    // gating in enterInlineEmojiSearchIfNeeded / updateInlineEmojiSearch is
+    // permissive enough to actually exercise the inline-mode transitions.
+    private fun installFakeEmojiDictionaryFacilitator() {
+        val field = InputLogic::class.java.getDeclaredField("mEmojiDictionaryFacilitator")
+        field.isAccessible = true
+        field.set(inputLogic, Mockito.mock(SingleDictionaryFacilitator::class.java))
     }
 
     // Sanity regression for the second hypothesis in the bailout plan:
@@ -1218,6 +1265,59 @@ class ShadowKeyboardSwitcher {
     fun setOneHandedModeEnabled(enabled: Boolean) = Unit
     @Implementation
     fun getCurrentKeyboardScript() = currentScript
+
+    // Tracks the InternalAction that the real KeyboardSwitcher would have applied
+    // to the keyboard layout. Required for the inline-emoji-search regression
+    // tests, which need to observe runtime layout state — i.e. did the IME
+    // actually leave inline-emoji-search mode after a space? Without overriding
+    // loadKeyboard the real Android infrastructure would be hit and crash the
+    // Robolectric test.
+    @Implementation
+    fun loadKeyboard(
+        editorInfo: android.view.inputmethod.EditorInfo?,
+        settingsValues: SettingsValues?,
+        currentAutoCapsState: Int,
+        currentRecapitalizeState: RecapitalizeMode?,
+        internalAction: KeyboardLayoutSet.InternalAction?,
+    ) {
+        lastInternalAction = internalAction
+    }
+
+    @Implementation
+    fun getKeyboard(): Keyboard? = fakeKeyboard
+
+    companion object {
+        var lastInternalAction: KeyboardLayoutSet.InternalAction? = null
+            set(value) {
+                field = value
+                fakeKeyboard = buildFakeKeyboard(value)
+            }
+        var fakeKeyboard: Keyboard? = null
+            private set
+
+        fun resetForInlineEmojiTest() {
+            lastInternalAction = null
+        }
+
+        private fun buildFakeKeyboard(action: KeyboardLayoutSet.InternalAction?): Keyboard? {
+            if (action == null) {
+                // Match the production semantics: a null internal action means
+                // we're not in the special inline-emoji-search layout. Returning
+                // null mirrors what real KeyboardSwitcher.getKeyboard() does
+                // when nothing is currently bound (no view).
+                return null
+            }
+            val keyboardId = Mockito.mock(KeyboardId::class.java)
+            val mInternalActionField = KeyboardId::class.java.getField("mInternalAction")
+            mInternalActionField.isAccessible = true
+            mInternalActionField.set(keyboardId, action)
+            val keyboard = Mockito.mock(Keyboard::class.java)
+            val mIdField = Keyboard::class.java.getField("mId")
+            mIdField.isAccessible = true
+            mIdField.set(keyboard, keyboardId)
+            return keyboard
+        }
+    }
 }
 
 @Implements(DictionaryFacilitatorImpl::class)
