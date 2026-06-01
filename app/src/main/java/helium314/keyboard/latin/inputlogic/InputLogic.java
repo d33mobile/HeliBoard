@@ -1187,6 +1187,16 @@ public final class InputLogic {
             if (!shouldAvoidSendingCode) {
                 mConnection.commitCodePoint(codePoint);
             }
+
+            // nopopup fork: after committing a space, re-evaluate whether we are
+            // still in inline emoji search mode. Without this call the keyboard
+            // stays in INLINE_EMOJI_SEARCH_DONE action after the user types ':c '
+            // and keeps routing suggestion queries through searchForEmojiInline
+            // even though getInlineEmojiSearchString returns null for the new
+            // text. Visible symptom from user report 2026-06-01: typing ':c da s'
+            // kept producing emoji suggestions across the second space because
+            // suggestions kept falling back to the older inline-emoji results.
+            updateInlineEmojiSearch();
         } else {
             if (SpaceState.PHANTOM == inputTransaction.getSpaceState()
                     && (settingsValues.isUsuallyFollowedBySpace(codePoint) || isInsideDoubleQuoteOrAfterDigit)) {
